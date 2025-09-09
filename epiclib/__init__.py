@@ -8,4 +8,4 @@ try:
 except Exception:
     __version__ = "0.0.0"
 
-# Importing the compiled extension is just: import epiclib
+# Desipte being called epiclibcpp, importing the compiled extension is just: import epiclib
