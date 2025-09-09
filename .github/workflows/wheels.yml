@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     tags:
-      - "v*.*.*"
+      - "v*.*.*"     # tag releases publish to PyPI (if you added that job)
   pull_request:
 
 permissions:
@@ -18,45 +18,53 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Linux x86_64
+          # Linux x86_64 (manylinux2014)
           - os: ubuntu-22.04
             env:
               CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64"
               CIBW_BUILD_VERBOSITY: "3"
-              # keep manylinux2014; auditwheel will repair
               CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-              # quiet compiler warnings; your CMake keeps its own flags
+              # Quiet warnings; keep your existing CMake flags intact
               CXXFLAGS: "-w -static-libstdc++ -static-libgcc"
               CFLAGS: "-w"
 
-          # Windows 64-bit only
+          # Windows AMD64 only
           - os: windows-2022
             env:
               CIBW_BUILD: "cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64"
               CIBW_BUILD_VERBOSITY: "3"
-              # silence warnings on MSVC; /W0 is the cleanest
+              CIBW_SKIP: "*-win32"     # ensure 32-bit is skipped
+              CIBW_ARCHS_WINDOWS: "AMD64"
+              # Silence warnings on MSVC; keep your build flags in CMake
               CL: "/W0"
 
-          # macOS Intel (x86_64)
+          # macOS Intel (x86_64, macOS >= 10.13)
           - os: macos-13
             env:
               CIBW_BUILD: "cp310-macosx_x86_64 cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64"
               CIBW_BUILD_VERBOSITY: "3"
-              CMAKE_OSX_ARCHITECTURES: "x86_64"
-              MACOSX_DEPLOYMENT_TARGET: "10.9"
-              # pass the same to CMake via scikit-build
-              SKBUILD_CMAKE_ARGS: "-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
+              # These env vars are visible to scikit-build/CMake invoked by pip
+              CIBW_ENVIRONMENT_MACOS: >-
+                MACOSX_DEPLOYMENT_TARGET=10.13
+                CMAKE_OSX_DEPLOYMENT_TARGET=10.13
+                CMAKE_OSX_ARCHITECTURES=x86_64
+                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
+              # Require the right arch to be present in Mach-O
+              CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs x86_64 -w {dest_dir} -v {wheel}"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
-          # macOS Apple Silicon (arm64)
+          # macOS Apple Silicon (arm64, macOS >= 11.0)
           - os: macos-14
             env:
               CIBW_BUILD: "cp310-macosx_arm64 cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64"
               CIBW_BUILD_VERBOSITY: "3"
-              CMAKE_OSX_ARCHITECTURES: "arm64"
-              MACOSX_DEPLOYMENT_TARGET: "11.0"
-              SKBUILD_CMAKE_ARGS: "-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+              CIBW_ENVIRONMENT_MACOS: >-
+                MACOSX_DEPLOYMENT_TARGET=11.0
+                CMAKE_OSX_DEPLOYMENT_TARGET=11.0
+                CMAKE_OSX_ARCHITECTURES=arm64
+                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+              CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs arm64 -w {dest_dir} -v {wheel}"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
@@ -73,17 +81,6 @@ jobs:
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
-
-      - name: Inspect built wheels (sanity check)
-        run: |
-          python - <<'PY'
-          import zipfile, glob
-          for whl in glob.glob("wheelhouse/*.whl"):
-              print("==>", whl)
-              with zipfile.ZipFile(whl) as z:
-                  found = [n for n in z.namelist() if n.startswith("epiclibcpp/") and (n.endswith(".so") or n.endswith(".pyd"))]
-                  print("  contains extension:", found or "<NONE>")
-          PY
 
       - name: Store wheels (artifact)
         uses: actions/upload-artifact@v4
