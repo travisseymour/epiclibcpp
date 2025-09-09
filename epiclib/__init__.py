@@ -1,3 +1,4 @@
+# epiclibcpp/__init__.py
 try:
     from importlib.metadata import version, PackageNotFoundError
     try:
@@ -6,3 +7,5 @@ try:
         __version__ = "0.0.0"
 except Exception:
     __version__ = "0.0.0"
+
+# Importing the compiled extension is just: import epiclib
