@@ -59,6 +59,28 @@ jobs:
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Set up Python (host)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.*
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Store wheels (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ runner.os }}
+          path: wheelhouse/*.whl
+
   upload_testpypi_on_push:
     needs: build_wheels
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
