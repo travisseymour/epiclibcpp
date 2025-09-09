@@ -2,7 +2,7 @@
 
 > Python Module Interface for Dave Kieras's C++ version of epiclib. 
 
-<mark>NOTE</mark>: This is not 1:1 with DK's epiclib, several tweaks were used to facilitate interop wth Python.
+<mark>NOTE</mark>: This is not 1:1 with DK's epiclib. Several tweaks were used to facilitate interop wth Python.
 
 ---
 
