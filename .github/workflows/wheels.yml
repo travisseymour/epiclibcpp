@@ -27,9 +27,8 @@ jobs:
               CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel show {wheel} && auditwheel repair --plat manylinux2014_x86_64 -w {dest_dir} {wheel}"
               CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
               # Quiet warnings from the compiler only (CMake flags remain yours)
-              CXXFLAGS: "-w"
+              CXXFLAGS: "-w -static-libstdc++ -static-libgcc"
               CFLAGS: "-w"
-
 
           # Windows amd64
 #          - os: windows-2022
@@ -38,20 +37,13 @@ jobs:
 #              CIBW_BUILD_VERBOSITY: "3"
 #              CL: "/W0"
 
-
           # macOS Intel
           - os: macos-13
             env:
               CIBW_BUILD: "cp310-macosx_x86_64 cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64"
               CIBW_BUILD_VERBOSITY: "3"
-              # Make CMake build exactly x86_64 targeting 10.9
-              CIBW_ENVIRONMENT_MACOS: >-
-                MACOSX_DEPLOYMENT_TARGET=10.9
-                CMAKE_OSX_ARCHITECTURES=x86_64
-                CMAKE_OSX_DEPLOYMENT_TARGET=10.9
-                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
-              # Show deps before fix; then delocate (explicit)
-              CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-listdeps {wheel} && delocate-wheel -w {dest_dir} -v {wheel}"
+              CMAKE_OSX_ARCHITECTURES: "x86_64"
+              MACOSX_DEPLOYMENT_TARGET: "10.9"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
@@ -60,13 +52,8 @@ jobs:
             env:
               CIBW_BUILD: "cp310-macosx_arm64 cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64"
               CIBW_BUILD_VERBOSITY: "3"
-              # Make CMake build exactly arm64 targeting 11.0
-              CIBW_ENVIRONMENT_MACOS: >-
-                MACOSX_DEPLOYMENT_TARGET=11.0
-                CMAKE_OSX_ARCHITECTURES=arm64
-                CMAKE_OSX_DEPLOYMENT_TARGET=11.0
-                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
-              CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-listdeps {wheel} && delocate-wheel -w {dest_dir} -v {wheel}"
+              CMAKE_OSX_ARCHITECTURES: "arm64"
+              MACOSX_DEPLOYMENT_TARGET: "11.0"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
