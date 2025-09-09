@@ -1,0 +1,128 @@
+name: Build & Publish Wheels
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+  # Tag pattern vX.Y.Z triggers a real PyPI release
+  tags:
+    - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  build_wheels:
+    name: Build wheels (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: windows-2022
+          - os: macos-13   # Intel
+          - os: macos-14   # Apple Silicon
+    env:
+      # Build only CPython 3.10-3.13
+      CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+      CIBW_SKIP: "pp* *-musllinux_*"   # no PyPy, no musllinux
+      # Silence warnings in CI while keeping your fatal error behavior local
+      CXXFLAGS: "-w"
+      CFLAGS: "-w"
+      # Windows MSVC flag to reduce warnings; MSVC ignores -w
+      CL: "/W0"
+      # Tweak manylinux image to 2014 (good baseline for pybind11 wheels)
+      CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+      CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
+      # Ensure CMake/Ninja/pybind11 present in the build env
+      CIBW_BEFORE_BUILD: "pip install scikit-build-core cmake ninja pybind11 setuptools-scm"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Set up Python (host)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.*
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Store wheels (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ runner.os }}
+          path: wheelhouse/*.whl
+
+  upload_testpypi_on_push:
+    needs: build_wheels
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-Linux
+          path: dist
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-Windows
+          path: dist
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-macOS
+          path: dist
+        continue-on-error: true
+
+      - name: Show built wheels
+        run: ls -al dist || true
+
+      - name: Publish to TestPyPI (dev builds)
+        if: env.HAS_WHEELS != '0'
+        env:
+          HAS_WHEELS: 1
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          python -m pip install twine
+          # Append a dev+sha to the version so TestPyPI stays ahead of last tag
+          # setuptools-scm will already produce a .devN from non-tag commits.
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/*.whl || true
+
+  upload_pypi_on_tag:
+    needs: build_wheels
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-Linux
+          path: dist
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-Windows
+          path: dist
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-macOS
+          path: dist
+        continue-on-error: true
+
+      - name: Publish to PyPI
+        env:
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m pip install twine
+          twine upload dist/*.whl

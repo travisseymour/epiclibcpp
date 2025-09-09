@@ -1,0 +1,42 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.10",
+  "pybind11>=2.10",          # provides CMake config used by your CMakeLists
+  "cmake>=3.20",
+  "ninja>=1.10",
+  "setuptools-scm>=8",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "epiclibcpp"
+description = "EPIC C++ core wrapped with pybind11 as the 'epiclib' Python extension"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary or your license here" }
+authors = [{ name = "Travis Seymour" }]
+dynamic = ["version"]
+
+# You publish cp310..cp313 wheels via CI; no pure-Python deps at runtime
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/travisseymour/epiclibcpp"
+Issues = "https://github.com/travisseymour/epiclibcpp/issues"
+
+[tool.setuptools_scm]
+# Use tags for versioning; tag like v0.1.0
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
+
+[tool.scikit-build]
+# scikit-build-core defaults to using CMakeLists.txt in repo root.
+# Build output is a wheel containing the compiled 'epiclib' extension module.
+wheel.expand-macos-universal-tags = false
+
+# Pass environment-defined extra flags through to CMake without changing your file.
+cmake.verbose = true
+
+# [tool.scikit-build.cmake]
+# Let your CMakeLists decide flags/standard; we do not override.
+# (Your CMakeLists already sets C++14 for MSVC and GCC/Clang flags). :contentReference[oaicite:2]{index=2}
