@@ -85,7 +85,7 @@ jobs:
       - name: Store wheels (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ runner.os }}
+          name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
 
   upload_testpypi_on_push:
@@ -95,17 +95,20 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-Linux
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-macOS
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-Windows
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
 
@@ -128,17 +131,20 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-Linux
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-macOS
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
       - uses: actions/download-artifact@v4
         with:
-          name: wheels-Windows
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
         continue-on-error: true
 
