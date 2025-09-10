@@ -4,15 +4,38 @@ on:
   push:
     branches: [ "main" ]
     tags:
-      - "v*.*.*"     # tag releases publish to PyPI (if you added that job)
+      - "v*.*.*"
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
+  read_version:
+    name: Read version from pyproject.toml
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.getver.outputs.version }}
+      is_dev: ${{ steps.getver.outputs.is_dev }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: getver
+        shell: bash
+        run: |
+          VER=$(python - <<'PY'
+          import re, sys
+          txt=open("pyproject.toml","r",encoding="utf-8").read()
+          m=re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"', txt)
+          print(m.group(1) if m else "0.0.0")
+          PY
+          )
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          if [[ "$VER" == *".dev"* ]]; then echo "is_dev=true" >> "$GITHUB_OUTPUT"; else echo "is_dev=false" >> "$GITHUB_OUTPUT"; fi
+          echo "Detected version: $VER (dev: $([[ "$VER" == *".dev"* ]] && echo yes || echo no))"
+
   build_wheels:
     name: Build wheels (${{ matrix.os }})
+    needs: read_version
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,9 +45,9 @@ jobs:
           - os: ubuntu-22.04
             env:
               CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64"
+              CIBW_SKIP: "pp* *-musllinux_*"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_MANYLINUX_X86_64_IMAGE: "manylinux2014"
-              # Quiet warnings; keep your existing CMake flags intact
               CXXFLAGS: "-w -static-libstdc++ -static-libgcc"
               CFLAGS: "-w"
 
@@ -32,32 +55,31 @@ jobs:
           - os: windows-2022
             env:
               CIBW_BUILD: "cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64"
+              CIBW_SKIP: "pp* *-win32"
               CIBW_BUILD_VERBOSITY: "3"
-              CIBW_SKIP: "*-win32"     # ensure 32-bit is skipped
               CIBW_ARCHS_WINDOWS: "AMD64"
-              # Silence warnings on MSVC; keep your build flags in CMake
               CL: "/W0"
 
-          # macOS Intel (x86_64, macOS >= 10.13)
+          # macOS Intel (x86_64)
           - os: macos-13
             env:
               CIBW_BUILD: "cp310-macosx_x86_64 cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64"
+              CIBW_SKIP: "pp*"
               CIBW_BUILD_VERBOSITY: "3"
-              # These env vars are visible to scikit-build/CMake invoked by pip
               CIBW_ENVIRONMENT_MACOS: >-
                 MACOSX_DEPLOYMENT_TARGET=10.13
                 CMAKE_OSX_DEPLOYMENT_TARGET=10.13
                 CMAKE_OSX_ARCHITECTURES=x86_64
                 SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
-              # Require the right arch to be present in Mach-O
               CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs x86_64 -w {dest_dir} -v {wheel}"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
-          # macOS Apple Silicon (arm64, macOS >= 11.0)
+          # macOS Apple Silicon (arm64)
           - os: macos-14
             env:
               CIBW_BUILD: "cp310-macosx_arm64 cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64"
+              CIBW_SKIP: "pp*"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_ENVIRONMENT_MACOS: >-
                 MACOSX_DEPLOYMENT_TARGET=11.0
@@ -89,8 +111,8 @@ jobs:
           path: wheelhouse/*.whl
 
   upload_testpypi_on_push:
-    needs: build_wheels
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+    needs: [read_version, build_wheels]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && needs.read_version.outputs.is_dev == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/download-artifact@v4
@@ -98,35 +120,22 @@ jobs:
           pattern: wheels-*
           merge-multiple: true
           path: dist
-        continue-on-error: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          merge-multiple: true
-          path: dist
-        continue-on-error: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          merge-multiple: true
-          path: dist
-        continue-on-error: true
 
       - name: Show built wheels
         run: ls -al dist || true
 
-      - name: Publish to TestPyPI (dev builds)
+      - name: Publish to TestPyPI (dev builds only)
         env:
           TWINE_NON_INTERACTIVE: 1
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           python -m pip install -U twine
-          twine upload --repository-url https://test.pypi.org/legacy/ dist/*.whl || true
+          twine upload --repository-url https://test.pypi.org/legacy/ --skip-existing dist/*.whl
 
   upload_pypi_on_tag:
-    needs: build_wheels
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [read_version, build_wheels]
+    if: startsWith(github.ref, 'refs/tags/v') && needs.read_version.outputs.is_dev == 'false'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/download-artifact@v4
@@ -134,28 +143,15 @@ jobs:
           pattern: wheels-*
           merge-multiple: true
           path: dist
-        continue-on-error: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          merge-multiple: true
-          path: dist
-        continue-on-error: true
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          merge-multiple: true
-          path: dist
-        continue-on-error: true
 
       - name: Show built wheels
         run: ls -al dist || true
 
-      - name: Publish to PyPI
+      - name: Publish to PyPI (release versions only)
         env:
           TWINE_NON_INTERACTIVE: 1
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           python -m pip install -U twine
-          twine upload dist/*.whl
+          twine upload --skip-existing dist/*.whl
