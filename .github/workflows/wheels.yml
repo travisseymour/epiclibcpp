@@ -61,7 +61,7 @@ jobs:
               CL: "/W0"
 
           # macOS Intel (x86_64)
-          - os: macos-13
+          - os: macos-15-intel
             env:
               CIBW_BUILD: "cp310-macosx_x86_64 cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64"
               CIBW_SKIP: "pp*"
@@ -76,7 +76,7 @@ jobs:
               CFLAGS: "-w"
 
           # macOS Apple Silicon (arm64)
-          - os: macos-14
+          - os: macos-15   # or macos-latest (currently macOS 15)
             env:
               CIBW_BUILD: "cp310-macosx_arm64 cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64"
               CIBW_SKIP: "pp*"

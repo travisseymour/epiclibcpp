@@ -23,25 +23,25 @@ import random
 from rich import print
 from rich.console import Console
 from pathlib import Path
-from epiclib import Symbol, Speech_word, Model, Device_base
-from epiclib.geometric_utilities import Point
-from epiclib import (
+from epiclibcpp.epiclib import Symbol, Speech_word, Model, Device_base
+from epiclibcpp.epiclib.geometric_utilities import Point
+from epiclibcpp.epiclib import (
     Output_tee,
     Device_exception,
     Coordinator,
     geometric_utilities as gu
 )
-from epiclib import View_base, Visual_encoder_base, Auditory_encoder_base
-from epiclib.pps_globals import PPS_out
-from epiclib.output_tee_globals import (Normal_out, Trace_out, Exception_out, Debug_out)
-from epiclib import numeric_utilities as nu, random_utilities as ru, symbol_utilities as su
-from epiclib.syllable_counter import count_total_syllables
-from epiclib.standard_symbols import *
-from epiclib.standard_utility_symbols import *
-import epiclib.statistics as stats
-import epiclib.rms_statistics as rms
-from epiclib import raise_device_exception, raise_epic_exception
-from epiclib import Coordinator
+from epiclibcpp.epiclib import View_base, Visual_encoder_base, Auditory_encoder_base
+from epiclibcpp.epiclib.pps_globals import PPS_out
+from epiclibcpp.epiclib.output_tee_globals import (Normal_out, Trace_out, Exception_out, Debug_out)
+from epiclibcpp.epiclib import numeric_utilities as nu, random_utilities as ru, symbol_utilities as su
+from epiclibcpp.epiclib.syllable_counter import count_total_syllables
+from epiclibcpp.epiclib.standard_symbols import *
+from epiclibcpp.epiclib.standard_utility_symbols import *
+import epiclibcpp.epiclib.statistics as stats
+import epiclibcpp.epiclib.rms_statistics as rms
+from epiclibcpp.epiclib import raise_device_exception, raise_epic_exception
+from epiclibcpp.epiclib import Coordinator
 
 # print('--hook up output--')
 

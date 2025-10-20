@@ -44,7 +44,13 @@ version = "0.1.0"
 5. **Tag the same commit and push the tag** to trigger the PyPI upload:
 
 ```bash
-git tag v0.1.0 && git push origin v0.1.0
+git tag v0.1.0
+git push origin v0.1.0
+```
+**If** `git push origin ...` gives a "Permission denied to XXXXX" error, you may have to run this first:
+
+```bash
+git remote set-url origin git@github.com:travisseymour/epiclibcpp.git
 ```
 
 6. **Test install from PyPI**:
