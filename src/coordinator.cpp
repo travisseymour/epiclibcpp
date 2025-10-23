@@ -54,7 +54,7 @@ void Coordinator::initialize()
 
 	
 	initialize_processors();	// every processor should reset itself
-	state.store(INITIALIZED, std::memory_order_release);
+	state = INITIALIZED;
 	if(Normal_out)
 		Normal_out << "Simulation initialized with " << processor_list.size() << " processors" << endl;
 }
@@ -76,7 +76,7 @@ When the main body of this function is being executed, the state might be STARTI
 */
 void Coordinator::run_for(long run_duration)
 {
-	switch(state.load(std::memory_order_acquire)) {
+	switch(state) {
 		case UNREADY: case FINISHED: {
 			initialize();
 			// drop through
@@ -88,7 +88,7 @@ void Coordinator::run_for(long run_duration)
 			// drop through
 			}
 		case STARTED: case TIMED_OUT: case PAUSED: {
-			state.store(RUNNING, std::memory_order_release);
+			state = RUNNING;
 			break;
 			}
 		case RUNNING: {
@@ -107,7 +107,7 @@ void Coordinator::run_for(long run_duration)
 	// main event delivery loop - note later condition takes us out when the time is up
 	// this ensures that all events at the time_out_time get dispatched.
 	// this supersedes modification of DR 9/2/2005 - DK 5/9/06
-	while (state.load(std::memory_order_acquire) == RUNNING && !event_queue.empty()) {
+	while (state == RUNNING && !event_queue.empty()) {
 		event_ptr = event_queue.top();
 		// peek at the next event time - have we processed all these events?
 		if(event_ptr->get_time() > time_out_time) {
@@ -134,18 +134,18 @@ void Coordinator::run_for(long run_duration)
 
 	// if stop() was called or stopped because of no more events, 
 	// set the finished flag
-	if (state.load(std::memory_order_acquire) == FINISHED || event_queue.empty()) {
+	if(state == FINISHED || event_queue.empty()) {
 
-		state.store(FINISHED, std::memory_order_release);
+		state = FINISHED;
 		// tell the processors everything is done
 		shutdown();
 		}
 	// if paused by call to PAUSE function, do nothing further
-	else if (state.load(std::memory_order_acquire) == PAUSED) {
+	else if(state == PAUSED) {
 		}
 	// else, deliveries stopped due to running out of time
 	else {
-		state.store(TIMED_OUT, std::memory_order_release);
+		state = TIMED_OUT;
 		}
 }
 
@@ -153,13 +153,13 @@ void Coordinator::run_for(long run_duration)
 // this causes deliveries to be halted without a shutdown
 void Coordinator::pause()
 {
-	state.store(PAUSED, std::memory_order_release);
+	state = PAUSED;
 }
 
 // tell the simulation to stop running, and set the finished flag to cause a shutdown
 void Coordinator::stop()
 {
-	state.store(FINISHED, std::memory_order_release);
+	state = FINISHED;
 }
 
 /*** Event delivery interface ***/
@@ -230,10 +230,10 @@ void Coordinator::initialize_processors()
 			Processor * proc_ptr = *it;
 			proc_ptr->initialize();
 			}
-		state.store(INITIALIZED, std::memory_order_release);
+		state = INITIALIZED;
 	}
 	catch (...) {
-		state.store(UNREADY, std::memory_order_release);
+		state = UNREADY;
 		// rethrow the exception
 		throw;
 		}
@@ -250,7 +250,7 @@ void Coordinator::send_start_event()
 		event_ptr->send_self(proc_ptr);
 		delete event_ptr;
 		}
-	state.store(STARTED, std::memory_order_release);
+	state = STARTED;
 }
 
 void Coordinator::send_stop_event()

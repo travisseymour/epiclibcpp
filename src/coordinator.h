@@ -27,11 +27,12 @@ If the model completes, or it is told to halt, it goes into the FINISHED state.
 #include <vector>
 #include <queue>
 #include <ctime>
-#include <atomic>
 
 // forward declarations
 class Processor;
 
+
+	enum Simulation_state_e {UNREADY, INITIALIZED, STARTED, RUNNING, TIMED_OUT, PAUSED, FINISHED};
 class Coordinator {
 public:
 	// create if needed, and return the pointer to the singleton Coordinator
@@ -68,11 +69,16 @@ public:
 		finished means the simulation was shutdown either from the outside,
 			or the model completed.
 	*/
-	bool is_not_ready() const { return (state.load(std::memory_order_acquire) == UNREADY); }
-	bool is_runnable() const { auto s = state.load(std::memory_order_acquire); return (s == INITIALIZED || s == TIMED_OUT || s == PAUSED || s == FINISHED); }
-	bool is_timed_out() const { return (state.load(std::memory_order_acquire) == TIMED_OUT); } 
-	bool is_paused() const { return (state.load(std::memory_order_acquire) == PAUSED); } 
-	bool is_finished() const { return (state.load(std::memory_order_acquire) == FINISHED); } 
+	bool is_not_ready() const
+		{return (state == UNREADY);}
+	bool is_runnable() const
+		{return (state == INITIALIZED || state == TIMED_OUT || state == PAUSED || state == FINISHED);}
+	bool is_timed_out() const
+		{return (state == TIMED_OUT);} 
+	bool is_paused() const
+		{return (state == PAUSED);} 
+	bool is_finished() const
+		{return (state == FINISHED);} 
 		
 	/*** Event delivery interface ***/
 	// add/remove a processor to/from the list of processors
@@ -87,7 +93,6 @@ public:
 	
 private:
 	static long current_time;	// the true universal current simulated time
-	enum Simulation_state_e {UNREADY, INITIALIZED, STARTED, RUNNING, TIMED_OUT, PAUSED, FINISHED};
 	std::atomic<Simulation_state_e> state;	// state of simulation
 	std::list<Processor *> processor_list;		// list of processors
 	std::time_t start_wallclock_time;	// for process time output
