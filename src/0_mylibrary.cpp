@@ -757,21 +757,35 @@ PYBIND11_MODULE(epiclib, m) {
 //        .def("get_production_system_ptr", &Model::get_production_system_ptr)
         ;
 
-
+	py::enum_<Simulation_state_e>(m, "CoordinatorState")
+        .value("UNREADY", UNREADY)
+        .value("INITIALIZED", INITIALIZED)
+        .value("STARTED", STARTED)
+        .value("RUNNING", RUNNING)
+        .value("TIMED_OUT", TIMED_OUT)
+        .value("PAUSED", PAUSED)
+        .value("FINISHED", FINISHED)
+        .export_values()  // optional: allows epiclib.RUNNING, etc.
+		;
 
     // NOTE: Can't copy (e.g. my_instance = Coordinator.get_instance())
     //       For now, using Coordinator directly, but if that don't work, may need to
     //       create an object above that serves as an interface and expose that instead.
     //       or this: https://stackoverflow.com/questions/41814652/how-to-wrap-a-singleton-class-using-pybind11
     py::class_<Coordinator, std::unique_ptr<Coordinator>>(m, "Coordinator")
+		.def_property_readonly("state", &Coordinator::get_state)
         .def_static("get_instance", &Coordinator::get_instance, py::return_value_policy::reference)
         .def_static("get_time", &Coordinator::get_time)
         .def("initialize", &Coordinator::initialize)
-        .def("run_until_done", &Coordinator::run_until_done)
-        .def("run_for", &Coordinator::run_for, py::arg("run_duration"))
+    	.def("run_until_done", &Coordinator::run_until_done, py::call_guard<py::gil_scoped_release>())
+    	.def("run_for", &Coordinator::run_for, py::arg("run_duration"), py::call_guard<py::gil_scoped_release>())
         .def("pause", &Coordinator::pause)
         .def("stop", &Coordinator::stop)
         .def("shutdown_simulation", &Coordinator::shutdown_simulation)
+		// if you wanted to make the following properties, do something like this:
+		//.def_property_readonly("is_running", [](const Coordinator& c){
+    	//	return c.get_state() == RUNNING;
+		//})
         .def("is_not_ready", &Coordinator::is_not_ready)
         .def("is_runnable", &Coordinator::is_runnable)
         .def("is_timed_out", &Coordinator::is_timed_out)
