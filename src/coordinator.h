@@ -27,6 +27,7 @@ If the model completes, or it is told to halt, it goes into the FINISHED state.
 #include <vector>
 #include <queue>
 #include <ctime>
+#include <atomic>
 
 // forward declarations
 class Processor;
