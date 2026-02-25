@@ -1,6 +1,6 @@
 # EPICLibCpp
 
-> Python Module Interface for Dave Kieras's C++ version of epiclib. 
+> Python Module Interface for Dave Kieras's C++ version of epiclib.
 
 <mark>NOTE</mark>: This is not 1:1 with DK's epiclib. Several tweaks were used to facilitate interop wth Python.
 
@@ -34,6 +34,8 @@ e.g.:
 git tag v0.1.0
 git push origin main v0.1.0
 ```
+
+> Note: You can check which versions you already have like this `git tag -l "v*"`
 
 ### Example
 
