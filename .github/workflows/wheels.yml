@@ -46,7 +46,7 @@ jobs:
                 MACOSX_DEPLOYMENT_TARGET=10.13
                 CMAKE_OSX_DEPLOYMENT_TARGET=10.13
                 CMAKE_OSX_ARCHITECTURES=x86_64
-                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
+                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64;-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
               CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs x86_64 -w {dest_dir} -v {wheel}"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
@@ -60,7 +60,7 @@ jobs:
                 MACOSX_DEPLOYMENT_TARGET=11.0
                 CMAKE_OSX_DEPLOYMENT_TARGET=11.0
                 CMAKE_OSX_ARCHITECTURES=arm64
-                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+                SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
               CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs arm64 -w {dest_dir} -v {wheel}"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
