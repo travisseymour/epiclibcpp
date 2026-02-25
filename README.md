@@ -13,8 +13,8 @@ This is the EPIC cognitive architecture C++ core library wrapped with pybind11 a
 ### Install (development builds from TestPyPI)
 
 ```bash
-python -m pip install -i https://test.pypi.org/simple epiclibcpp
-python -c "import epiclib, importlib.metadata as m; print('epiclib:', epiclib, 'version:', m.version('epiclibcpp'))"
+python -m pip install --pre -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple -U epiclibcpp
+python -c "import epiclibcpp.epiclib, importlib.metadata as m; print('epiclibcpp:', epiclibcpp, 'version:', m.version('epiclibcpp'))"
 ```
 
 ### Install (official releases from PyPI)
@@ -37,9 +37,9 @@ git push origin v0.1.0
 
 ### Example
 
-```python
-import epiclib
-print("epiclib loaded:", epiclib)
+```bash
+python -m pip install -U epiclibcpp
+python -c "import epiclibcpp.epiclib, importlib.metadata as m; print('epiclibcpp:', epiclibcpp, 'version:', m.version('epiclibcpp'))"
 ```
 
 ### Project Links

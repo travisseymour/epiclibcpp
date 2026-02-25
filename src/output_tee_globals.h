@@ -10,5 +10,6 @@ extern Output_tee Debug_out;
 extern Output_tee Device_out;
 extern Output_tee Exception_out;
 extern Output_tee Stats_out;
+extern Output_tee Info_out;
 
 #endif

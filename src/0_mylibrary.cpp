@@ -72,6 +72,7 @@ extern Output_tee Debug_out;
 extern Output_tee Device_out;
 extern Output_tee Exception_out;
 extern Output_tee Stats_out;
+extern Output_tee Info_out;
 
 class ProductionSystem: public Parsimonious_Production_System::Production_System {};
 
@@ -450,6 +451,7 @@ PYBIND11_MODULE(epiclib, m) {
     m_globals.attr("Device_out")  = py::cast(&Device_out,  py::return_value_policy::reference);
     m_globals.attr("Exception_out")  = py::cast(&Exception_out,  py::return_value_policy::reference);
     m_globals.attr("Stats_out")  = py::cast(&Stats_out,  py::return_value_policy::reference);
+    m_globals.attr("Info_out")  = py::cast(&Info_out,  py::return_value_policy::reference);
 
     auto pps_globals = m.def_submodule("pps_globals", "Global PPS Output_tee instance");
     pps_globals.attr("PPS_out")  = py::cast(&PPS_out,  py::return_value_policy::reference);

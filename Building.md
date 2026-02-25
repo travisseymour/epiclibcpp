@@ -16,7 +16,7 @@ version = "0.1.0.dev1"
 ```
 
 4. **Commit and push to `main`.**  
-   → This builds wheels and uploads to **TestPyPI**. It can take ~30 minutes.
+   → This builds wheels and uploads to **TestPyPI**. It can take ~30-45 minutes.
 
 5. **Test install from TestPyPI** (requires `uv`):
 
