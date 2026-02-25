@@ -8,3 +8,4 @@ Output_tee Debug_out;
 Output_tee Device_out;
 Output_tee Exception_out;
 Output_tee Stats_out;
+Output_tee Info_out;
