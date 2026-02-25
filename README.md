@@ -32,7 +32,7 @@ e.g.:
 
 ```bash
 git tag v0.1.0
-git push origin v0.1.0
+git push origin main v0.1.0
 ```
 
 ### Example
