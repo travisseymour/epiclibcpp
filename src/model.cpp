@@ -126,7 +126,10 @@ void Model::set_auditory_encoder_ptr(Auditory_encoder_base * auditory_encoder_pt
 Model::~Model()
 {
 	delete human_ptr;
-	delete device_ptr;
+	// NOTE: Do NOT delete device_ptr here. When using pybind11, Python owns
+	// the Device object and will manage its lifetime. Deleting it here causes
+	// a double-free crash when Python also tries to destroy the Device.
+	// device_ptr = nullptr;
 }
 
 // the filename is set to be the same the first time, and unset only if later changed
