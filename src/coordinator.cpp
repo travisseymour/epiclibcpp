@@ -201,8 +201,11 @@ void Coordinator::remove_processor(Processor * p)
 {
 	// should be unique
 //	cout << p->get_name() << " removing" << endl;
-	Assert(find(processor_list.begin(), processor_list.end(), p) != processor_list.end());
-	processor_list.remove(p);
+	// After reset() clears the list, old processors may still try to unregister
+	// when their destructors run. This is safe to ignore.
+	if(find(processor_list.begin(), processor_list.end(), p) != processor_list.end()) {
+		processor_list.remove(p);
+	}
 }
 
 // puts a copy of event_ptr into the schedule queue, immediately returns to originator.
