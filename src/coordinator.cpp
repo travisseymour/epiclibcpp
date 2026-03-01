@@ -162,6 +162,31 @@ void Coordinator::stop()
 	state = FINISHED;
 }
 
+// Reset the Coordinator for a fresh simulation.
+// This clears all processor registrations and drains the event queue.
+// Call this before creating a new Model/Device to ensure clean state.
+// Note: This doesn't delete processors - their owners (Model, etc.) handle that.
+// We're just severing the Coordinator's references so new processors start fresh.
+void Coordinator::reset()
+{
+	// Drain the event queue (events reference old processors)
+	while(!event_queue.empty()) {
+		const Event * event_ptr = event_queue.top();
+		delete event_ptr;
+		event_queue.pop();
+	}
+
+	// Clear all processor registrations
+	processor_list.clear();
+
+	// Reset time and state
+	current_time = 0;
+	state = UNREADY;
+
+	if(Normal_out)
+		Normal_out << "Coordinator reset - all processors cleared" << endl;
+}
+
 /*** Event delivery interface ***/
 // add a processor to coordinator's list of processors.
 void Coordinator::add_processor(Processor * p)

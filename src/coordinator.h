@@ -60,6 +60,8 @@ public:
 	void shutdown_simulation() {
 	    shutdown();
 	}
+	// Reset the Coordinator for a fresh simulation - clears all processors and events
+	void reset();
 
 	/* from the outside, the simulation is either not_ready, runnable, or finished.
 		runnable means the run_for function can be called - 

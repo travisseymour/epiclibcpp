@@ -784,6 +784,7 @@ PYBIND11_MODULE(epiclib, m) {
         .def("pause", &Coordinator::pause)
         .def("stop", &Coordinator::stop)
         .def("shutdown_simulation", &Coordinator::shutdown_simulation)
+        .def("reset", &Coordinator::reset)
 		// if you wanted to make the following properties, do something like this:
 		//.def_property_readonly("is_running", [](const Coordinator& c){
     	//	return c.get_state() == RUNNING;
