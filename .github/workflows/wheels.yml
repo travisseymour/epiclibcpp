@@ -87,7 +87,7 @@ jobs:
             ~/Library/Caches/pip
             ~/.cache/cibuildwheel
             ~/.cache/pip
-            ~\AppData\Local\cibuildwheel
+            ~\AppData\Local\pypa\cibuildwheel\Cache
             ~\AppData\Local\pip\Cache
           key: cibw-${{ matrix.os }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
@@ -100,7 +100,7 @@ jobs:
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             CACHE_DIR="$HOME/Library/Caches/cibuildwheel"
           elif [[ "$RUNNER_OS" == "Windows" ]]; then
-            CACHE_DIR="$LOCALAPPDATA/cibuildwheel"
+            CACHE_DIR="$LOCALAPPDATA/pypa/cibuildwheel/Cache"
           else
             CACHE_DIR="$HOME/.cache/cibuildwheel"
           fi
