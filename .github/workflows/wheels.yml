@@ -110,7 +110,7 @@ jobs:
             echo "virtualenv already cached at $DEST"
             exit 0
           fi
-          URL="https://github.com/pypa/virtualenv/releases/download/${VIRTUALENV_VERSION}/virtualenv.pyz"
+          URL="https://raw.githubusercontent.com/pypa/get-virtualenv/${VIRTUALENV_VERSION}/public/virtualenv.pyz"
           for i in 1 2 3 4 5; do
             echo "Attempt $i: downloading virtualenv.pyz..."
             if curl -fsSL --retry 3 --retry-delay 10 -o "$DEST" "$URL"; then
