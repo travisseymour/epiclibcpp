@@ -93,6 +93,36 @@ jobs:
           restore-keys: |
             cibw-${{ matrix.os }}-
 
+      - name: Pre-download virtualenv (with retries)
+        shell: bash
+        run: |
+          VIRTUALENV_VERSION="20.30.0"
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            CACHE_DIR="$HOME/Library/Caches/cibuildwheel"
+          elif [[ "$RUNNER_OS" == "Windows" ]]; then
+            CACHE_DIR="$LOCALAPPDATA/cibuildwheel"
+          else
+            CACHE_DIR="$HOME/.cache/cibuildwheel"
+          fi
+          mkdir -p "$CACHE_DIR"
+          DEST="$CACHE_DIR/virtualenv-${VIRTUALENV_VERSION}.pyz"
+          if [[ -f "$DEST" ]]; then
+            echo "virtualenv already cached at $DEST"
+            exit 0
+          fi
+          URL="https://github.com/pypa/virtualenv/releases/download/${VIRTUALENV_VERSION}/virtualenv.pyz"
+          for i in 1 2 3 4 5; do
+            echo "Attempt $i: downloading virtualenv.pyz..."
+            if curl -fsSL --retry 3 --retry-delay 10 -o "$DEST" "$URL"; then
+              echo "Downloaded successfully to $DEST"
+              exit 0
+            fi
+            echo "Download failed, waiting 30 seconds..."
+            sleep 30
+          done
+          echo "Failed to download virtualenv after 5 attempts"
+          exit 1
+
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.*
 
