@@ -1,7 +1,7 @@
 [build-system]
 requires = [
   "scikit-build-core>=0.9",
-  "pybind11>=2.11",
+  "pybind11>=3.0",
   "setuptools-scm>=8",
   # "cmake>=3.20",
   # "ninja>=1.10",
@@ -13,7 +13,7 @@ name = "epiclibcpp"
 dynamic = ["version"]
 description = "EPIC cognitive architecture C++ core exposed as a Python module via pybind11"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.15"
 authors = [{ name = "Travis Seymour" }]
 license = { file = "LICENSE" }
 classifiers = [
@@ -23,6 +23,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: C++",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Operating System :: OS Independent",

@@ -1,13 +1,9 @@
 #include <pybind11/pybind11.h>
-
-//------- this section is temp 4lines vvv, trying to see if this matters
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
 #include <pybind11/chrono.h>
-// ------
-
 #include <pybind11/iostream.h>
 
 #include <pybind11/pybind11.h>
@@ -81,23 +77,8 @@ class ProductionSystem: public Parsimonious_Production_System::Production_System
 // other
 // ********************************************************
 
-//void describe_parameters(const Model& model, Output_tee& ot)
-//{
-//    model.get_human_ptr()->describe_parameters(ot);
-//}
-
 string describe_parameters_u(const Model& model)
 {
-//    cout << "\nEPICLIB: Describe Parameters:\n";
-//    if (!Normal_out.is_present(cout)) {
-//        Normal_out.add_stream(cout);
-//    }
-//    model.get_human_ptr()->describe_parameters(Normal_out);
-//    cout << "EPICLIB: done.\n";
-//    if (!Normal_out.is_present(cout)) {
-//        Normal_out.remove_stream(cout);
-//    }
-
     Output_tee temp_out;
     ostringstream temp_str_stream;
     temp_out.add_stream(temp_str_stream);
@@ -397,8 +378,6 @@ PYBIND11_MODULE(epiclib, m) {
     //---------------------
 
 
-//    py::add_ostream_redirect(m, "ostream_redirect");
-
     py::class_<Device_exception>(m, "Device_exception")
         .def(py::init())
         .def(py::init<const std::string&>(), py::arg("msg_"))
@@ -601,10 +580,6 @@ PYBIND11_MODULE(epiclib, m) {
         .def("make_auditory_speech_event", &Device_base::make_auditory_speech_event, py::arg("word"))
         .def("make_high_level_input_appear", &Device_base::make_high_level_input_appear, py::arg("object_name"), py::arg("props"), py::arg("values"), py::arg("tag"))
         .def("make_high_level_input_disappear", &Device_base::make_high_level_input_disappear, py::arg("object_name"))
-//        ??? Whats the diff between these 2 approaches??
-//        .def("schedule_delay_event", static_cast<void (Device_base::*)(long)>(&Device_base::schedule_delay_event), py::arg("delay"))
-//        .def("schedule_delay_event", static_cast<void (Device_base::*)(long, const Symbol&, const Symbol&)>(&Device_base::schedule_delay_event), py::arg("delay"), py::arg("delay_type"), py::arg("delay_datum"))
-//        .def("schedule_delay_event", static_cast<void (Device_base::*)(long, const Symbol&, const Symbol&, const Symbol&, const Symbol&)>(&Device_base::schedule_delay_event), py::arg("delay"), py::arg("delay_type"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
         .def("schedule_delay_event", (void (Device_base::*)(long)) &Device_base::schedule_delay_event, py::arg("delay"))
         .def("schedule_delay_event", (void (Device_base::*)(long, const Symbol&, const Symbol&)) &Device_base::schedule_delay_event, py::arg("delay"), py::arg("delay_type"), py::arg("delay_datum"))
         .def("schedule_delay_event", (void (Device_base::*)(long, const Symbol&, const Symbol&, const Symbol&, const Symbol&)) &Device_base::schedule_delay_event, py::arg("delay"), py::arg("delay_type"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
@@ -614,62 +589,7 @@ PYBIND11_MODULE(epiclib, m) {
         .def("get_human_prs_filename", &Device_base::get_human_prs_filename)
         .def("stop_simulation", &Device_base::stop_simulation)
         .def("write", &Device_base::write, py::arg("msg"))
-
-//        .def("__del__", [](MyClass& self) {
-//            // free resources in __del__ method
-//        })
-
         ;
-
-//    py::class_<Parsimonious_Production_System::Production_System>(m, "Production_System")
-//        .def(py::init<>())
-//        .def("get_cycle_counter", &Parsimonious_Production_System::Production_System::get_cycle_counter)
-//        .def("get_output_compiler_messages", &Parsimonious_Production_System::Production_System::get_output_compiler_messages)
-//        .def("set_output_compiler_messages", &Parsimonious_Production_System::Production_System::set_output_compiler_messages)
-//        .def("get_output_compiler_details", &Parsimonious_Production_System::Production_System::get_output_compiler_details)
-//        .def("set_output_compiler_details", &Parsimonious_Production_System::Production_System::set_output_compiler_details)
-//        .def("get_output_run_messages", &Parsimonious_Production_System::Production_System::get_output_run_messages)
-//        .def("set_output_run_messages", &Parsimonious_Production_System::Production_System::set_output_run_messages)
-//        .def("get_output_run_details", &Parsimonious_Production_System::Production_System::get_output_run_details)
-//        .def("set_output_run_details", &Parsimonious_Production_System::Production_System::set_output_run_details)
-//        .def("get_output_run_memory_contents", &Parsimonious_Production_System::Production_System::get_output_run_memory_contents)
-//        .def("set_output_run_memory_contents", &Parsimonious_Production_System::Production_System::set_output_run_memory_contents)
-//        .def("clear", &Parsimonious_Production_System::Production_System::clear)
-//        .def("compile_file", &Parsimonious_Production_System::Production_System::compile_file)
-//        .def("display_static_contents", &Parsimonious_Production_System::Production_System::display_static_contents)
-//        .def("display_dynamic_contents", &Parsimonious_Production_System::Production_System::display_dynamic_contents)
-//        .def("reset", &Parsimonious_Production_System::Production_System::reset)
-//        .def("initialize", &Parsimonious_Production_System::Production_System::initialize)
-//        .def("run", &Parsimonious_Production_System::Production_System::run)
-//        .def("run_cycle", &Parsimonious_Production_System::Production_System::run_cycle)
-//        .def("update_add_clause", &Parsimonious_Production_System::Production_System::update_add_clause)
-//        .def("update_delete_clause", &Parsimonious_Production_System::Production_System::update_delete_clause)
-//        .def("add_to_add_clause_list", &Parsimonious_Production_System::Production_System::add_to_add_clause_list)
-//        .def("add_to_delete_clause_list", &Parsimonious_Production_System::Production_System::add_to_delete_clause_list)
-//        .def("add_initial_clause", &Parsimonious_Production_System::Production_System::add_initial_clause)
-//        .def("get_root_node_ptr", &Parsimonious_Production_System::Production_System::get_root_node_ptr)
-//        .def("get_named_location", &Parsimonious_Production_System::Production_System::get_named_location)
-//        .def("get_parameter_specifications", &Parsimonious_Production_System::Production_System::get_parameter_specifications)
-//        .def("add_pattern_node", &Parsimonious_Production_System::Production_System::add_pattern_node)
-//        .def("add_rule_node", &Parsimonious_Production_System::Production_System::add_rule_node)
-//        .def("add_to_fired_rules", &Parsimonious_Production_System::Production_System::add_to_fired_rules)
-//        .def("remove_from_fired_rules", &Parsimonious_Production_System::Production_System::remove_from_fired_rules)
-//        .def("memory_updated", &Parsimonious_Production_System::Production_System::memory_updated)
-//        .def("display_memory_contents", &Parsimonious_Production_System::Production_System::display_memory_contents)
-//        .def("get_rule_names", &Parsimonious_Production_System::Production_System::get_rule_names)
-//        .def("is_rule_name_valid", &Parsimonious_Production_System::Production_System::is_rule_name_valid)
-//        .def("get_break_enabled", &Parsimonious_Production_System::Production_System::get_break_enabled)
-//        .def("set_break_enabled", &Parsimonious_Production_System::Production_System::set_break_enabled)
-//        .def("set_rule_break_state", &Parsimonious_Production_System::Production_System::set_rule_break_state)
-//        .def("get_rule_break_state", &Parsimonious_Production_System::Production_System::get_rule_break_state)
-//        .def("get_break_rule_names", &Parsimonious_Production_System::Production_System::get_break_rule_names)
-//        .def("get_fault_enabled", &Parsimonious_Production_System::Production_System::get_fault_enabled)
-//        .def("set_fault_enabled", &Parsimonious_Production_System::Production_System::set_fault_enabled)
-//        .def("set_rule_fault_state", &Parsimonious_Production_System::Production_System::set_rule_fault_state)
-//        .def("get_rule_fault_state", &Parsimonious_Production_System::Production_System::get_rule_fault_state)
-//        .def("get_break_on_this_cycle", &Parsimonious_Production_System::Production_System::get_break_on_this_cycle)
-//        .def("get_fault_rule_names", &Parsimonious_Production_System::Production_System::get_fault_rule_names)
-//        ;
 
     py::class_<Model, std::unique_ptr<Model>>(m, "Model")
         .def(py::init<Device_base *>(), py::arg("device_ptr_"))
@@ -756,7 +676,6 @@ PYBIND11_MODULE(epiclib, m) {
         .def("set_device_parameter_string", &Model::set_device_parameter_string, py::arg("str_"))
         .def("get_device_parameter_string", &Model::get_device_parameter_string)
         .def("interconnect_device_and_human", &Model::interconnect_device_and_human)
-//        .def("get_production_system_ptr", &Model::get_production_system_ptr)
         ;
 
 	py::enum_<Simulation_state_e>(m, "CoordinatorState")
@@ -785,10 +704,6 @@ PYBIND11_MODULE(epiclib, m) {
         .def("stop", &Coordinator::stop)
         .def("shutdown_simulation", &Coordinator::shutdown_simulation)
         .def("reset", &Coordinator::reset)
-		// if you wanted to make the following properties, do something like this:
-		//.def_property_readonly("is_running", [](const Coordinator& c){
-    	//	return c.get_state() == RUNNING;
-		//})
         .def("is_not_ready", &Coordinator::is_not_ready)
         .def("is_runnable", &Coordinator::is_runnable)
         .def("is_timed_out", &Coordinator::is_timed_out)
@@ -1030,8 +945,6 @@ PYBIND11_MODULE(epiclib, m) {
     py::module_ su = m.def_submodule("symbol_utilities");
     su.doc() = "EPICLib module for Symbol manipulation";
     su.def("get_nth_Symbol", (Symbol (*)(Symbol_list_t&, long)) &get_nth_Symbol, "Return the nth Symbol in the list");
-//    su.def("print_Symbol_list", (Symbol (*)(std::vector<Symbol> *)) &print_Symbol_list, "Print a Symbol list");
-//    su.def("print_Symbol_list", (Symbol (*)(std::vector<Symbol> *, std::ostream &)) &print_Symbol_list, "Print a Symbol list to an output stream");
     su.def("cstr_to_Symbol_list", &cstr_to_Symbol_list, "Convert a C-string to a Symbol list");
     su.def("int_to_Symbol", &int_to_Symbol, "Convert an integer to a Symbol");
     su.def("concatenate_to_Symbol", (Symbol (*)(const char *, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a string and an integer");
