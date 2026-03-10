@@ -40,3 +40,7 @@ cmake-build-debug/
 .idea/
 *.swp
 *.swo
+
+# TLS
+
+logs_*/
