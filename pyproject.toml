@@ -34,8 +34,6 @@ Homepage = "https://github.com/travisseymour/epiclibcpp"
 Issues = "https://github.com/travisseymour/epiclibcpp/issues"
 
 [tool.scikit-build]
-# Keep using your existing CMakeLists.txt and flags.
-# We don't hard-pin CMAKE args here; cibuildwheel supplies them via env per-OS.
 wheel.expand-macos-universal-tags = false
 
 [tool.scikit-build.metadata.version]
@@ -46,4 +44,3 @@ version_scheme = "guess-next-dev"
 local_scheme = "no-local-version"
 
 [tool.scikit-build.cmake]
-# Leave blank; flags come from your scripts/CMake + CI env
