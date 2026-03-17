@@ -171,7 +171,8 @@ private:
     typedef std::map<Symbol, std::shared_ptr<Attention> > Attention_map;
 	Attention_map attention_list;
 	std::shared_ptr<Attention> default_attention;
-    
+	double attention_coeff;
+
     // saliency map container
     std::shared_ptr<Visual_attention_processor> visual_saliency;
 

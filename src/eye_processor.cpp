@@ -741,21 +741,22 @@ void Eye_processor::set_object_property(const Symbol& physical_name, const Symbo
 	// go ahead and send the property forward
 
     //MWalton Attention:
-    long atten_delay = atten_ptr->delay(obj_ptr, property_time_fluctuation.get_double_value(), attention_coeff);
-    //if an non-zero attention value has been defined, use that
-    if (atten_delay > 0) {
-        delay = atten_delay;
-        // std::cout << prop_name << " ECC:" << obj_ptr->get_eccentricity() << " DELAY:" << delay << " ATTN_COEFF:" << attention_coeff << "\n"; //DEBUG output
-    }
-    else {
-       //default to the delays defined by availability function of the property
-       delay = a_ptr->delay(obj_ptr, property_time_fluctuation.get_double_value());
+    // look up attention function for this property
+    Attention_map::iterator it_attention = attention_list.find(prop_name);
+    if (it_attention != attention_list.end()) {
+        std::shared_ptr<Attention> atten_ptr = it_attention->second;
+        long atten_delay = atten_ptr->delay(obj_ptr, property_time_fluctuation.get_double_value(), attention_coeff);
+        //if a non-zero attention value has been defined, use that
+        if (atten_delay > 0) {
+            delay = atten_delay;
+            // std::cout << prop_name << " ECC:" << obj_ptr->get_eccentricity() << " DELAY:" << delay << " ATTN_COEFF:" << attention_coeff << "\n"; //DEBUG output
+        }
     }
 	//MWalton Attention Saliency Map:
     //make variation based on visual saliency if defined
     if (visual_saliency != NULL) {
         GU::Point eye_loc = get_human_ptr()->get_Eye_processor_ptr()->get_location();
-        delay = visual_saliency->delay(delay, obj_ptr, eye_loc, property_time_fluctuation.get_value());
+        delay = visual_saliency->delay(delay, obj_ptr, eye_loc, property_time_fluctuation.get_double_value());
 	}
 
 	// queue a message to the sensory store

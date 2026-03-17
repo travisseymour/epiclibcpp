@@ -65,7 +65,7 @@ Visual_attention_processor * Visual_attention_processor::create
             Parameter::throw_parameter_error("Unable to read delay deviation celiling in parameter specification", param_spec);
         
         iss >> debugstr;
-        debug = iss;
+        debug = static_cast<bool>(iss);
         
         
         return new Visual_attention_processor(overt_distribution,
@@ -127,7 +127,7 @@ void Visual_attention_processor::spatial_cue(Human_processor * const human_ptr, 
     Symbol phys_name = human_ptr->get_Eye_processor_ptr()->get_name_map().get_physical_name(objname);
     Visual_perceptual_store * vis_percept_ptr = human_ptr->get_Visual_perceptual_store_ptr();
     
-    Smart_Pointer<Visual_store_object> percept_ptr = vis_percept_ptr->get_object_ptr(objname);
+    std::shared_ptr<Visual_store_object> percept_ptr = vis_percept_ptr->get_object_ptr(objname);
     
     GU::Point eye_location = human_ptr->get_Eye_processor_ptr()->get_location();
     GU::Point spatial_coordinate = percept_ptr->get_location();
@@ -230,7 +230,7 @@ void Visual_attention_processor::to_csv() {
     saliency_file.close();
 }
 
-long Visual_attention_processor::delay(double min_delay, Smart_Pointer<Visual_store_object> physobj_ptr,
+long Visual_attention_processor::delay(double min_delay, std::shared_ptr<Visual_store_object> physobj_ptr,
                                        GU::Point eye_loc, double time_fluctuation) {
     
     generate_saliency_map(1, weight);

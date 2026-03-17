@@ -15,7 +15,7 @@
 #include "visual_constants.h"
 #include "symbol.h"
 
-#include "Geometry.h"
+#include "geometry.h"
 namespace GU = Geometry_Utilities;
 
 //class Visual_attention_processor : public Reference_Counted_Object {

@@ -519,5 +519,117 @@ private:
 	double x2_coeff;
 };
 
+/**************************************************************************************************************
+ **************************************************************************************************************
+ **************************************************************************************************************/
+/*
+ Base class for property attention objects.
+ The delay function returns a time; it may be called even if the property is not available.
+ */
+class Attention {
+public:
+	Attention(const Visual_physical_store& physical_store_, const Symbol& property_name_) :
+        physical_store(physical_store_), property_name(property_name_)
+        {}
+	const Symbol& get_property_name() const 
+        {return property_name;}
+	
+	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation) = 0;
+	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff) = 0;
+	virtual std::string get_description() const = 0;
+	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store, const Parameter_specification& param_spec);
+	
+protected:
+	const Visual_physical_store& physical_store;
+private:
+	Symbol property_name;
+	Attention();
+};
+
+/* 
+ Flat attention, does not apply an attention model
+ This is the default for all properties
+ This function only exists to maintain backwards compatability with old models
+ */
+class Flat_attention : public Attention {
+public:
+	Flat_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_) :
+	Attention(physical_store_, property_name_){}
+	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
+	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+	virtual std::string get_description() const;
+	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_);
+private:
+	long transduction_delay;
+	double zone_radius;
+};
+
+/*
+ Fixed_quadratic attention varies the transduciton delay as a funciton of eccentricity
+ as a 2nd-order polynomial function extending from eccentricity = 0 out to the periphery.
+ The function is in the form: y = atten_coeff * x2_coeff * x^2 + intercept
+ All units are in degrees VA.
+ */
+class Fixed_quadratic_attention : public Attention {
+public:
+	Fixed_quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+								 double intercept_, double x2_coeff_) :
+	Attention(physical_store_, property_name_), 
+	intercept(intercept_), x2_coeff(x2_coeff_)
+	{Assert(intercept_ > 0. && x2_coeff > 0.);}
+	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+	virtual std::string get_description() const;
+	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+								 const Parameter_specification& param_spec, std::istringstream& iss);
+private:
+	double intercept;
+	double x2_coeff;
+};
+
+/*
+ Quadratic attention varies the transduciton delay as a funciton of eccentricity
+ as a 2nd-order polynomial function extending from eccentricity = 0 out to the periphery.
+ The function is in the form: y = atten_coeff * x2_coeff * x^2 + intercept + fluctuation
+ Fluctuation is a normal random distribution defined by coefvar
+ All units are in degrees VA.
+ */
+class Quadratic_attention : public Attention {
+public:
+	Quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+							  double intercept_, double x2_coeff_, double coefvar_) :
+	Attention(physical_store_, property_name_), 
+	intercept(intercept_), x2_coeff(x2_coeff_), coefvar(coefvar_)
+	{Assert(intercept_ > 0. && x2_coeff > 0. && coefvar > 0.);}
+	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+	virtual std::string get_description() const;
+	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+							  const Parameter_specification& param_spec, std::istringstream& iss);
+private:
+	double intercept;
+	double x2_coeff;
+	double coefvar;
+};
+
+/*
+ Constant attention delay
+ Only parameter is a constant delay value
+ */
+class Constant_attention_delay : public Attention {
+public:
+	Constant_attention_delay(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_) :
+	Attention(physical_store_, property_name_), transduction_delay(delay_)
+	{}
+	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
+	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+	virtual std::string get_description() const;
+	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
+							  const Parameter_specification& param_spec, std::istringstream& iss);
+private:
+	long transduction_delay;
+};
+/**************************************************************************************************************
+ **************************************************************************************************************
+ **************************************************************************************************************/
+
 
 #endif
