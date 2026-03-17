@@ -5,13 +5,13 @@
 // one of these as the identity name of the object, and the architecture assumes
 // the existence of these objects. The actual name is the symbol name without "_name_c"
 
-const Symbol Cursor_name_c("Cursor");			// the cursor visual object
-const Symbol Tracking_cursor_name_c("Tracking_cursor");	// the tracking cursor visual object
-const Symbol Mouse_name_c("Mouse");				// the mouse device itself
-const Symbol Mouse_Left_Button_c("Mouse_Left_Button");	// use for single mouse button
+const Symbol Cursor_name_c("Cursor");                   // the cursor visual object
+const Symbol Tracking_cursor_name_c("Tracking_cursor"); // the tracking cursor visual object
+const Symbol Mouse_name_c("Mouse");                     // the mouse device itself
+const Symbol Mouse_Left_Button_c("Mouse_Left_Button");  // use for single mouse button
 const Symbol Mouse_Middle_Button_c("Mouse_Middle_Button");
 const Symbol Mouse_Right_Button_c("Mouse_Right_Button");
-const Symbol Keyboard_name_c("Keyboard");		// the keyboard device as a whole
+const Symbol Keyboard_name_c("Keyboard"); // the keyboard device as a whole
 
 // used as a property name - but might be reserved
 const Symbol Status_c("Status");
@@ -32,11 +32,11 @@ const Symbol FgColor_changed_c("FgColor_changed");
 // standard visual property names
 const Symbol Color_c("Color");
 const Symbol Color_Vague_c("Color_Vague");
-const Symbol Targetable_c ("Targetable");
+const Symbol Targetable_c("Targetable");
 const Symbol BgColor_c("BgColor");
 const Symbol FgColor_c("FgColor");
 const Symbol Shape_c("Shape");
-const Symbol Size_c("Size");	// for actual size
+const Symbol Size_c("Size"); // for actual size
 const Symbol Encoded_size_c("Encoded_size");
 const Symbol Label_c("Label");
 const Symbol Text_c("Text");
@@ -67,57 +67,57 @@ const Symbol Menu_item_c("Menu_item");
 const Symbol Field_c("Field");
 
 // standard Color propery values
-const Symbol Aqua_c ("Aqua");
-const Symbol Black_c ("Black");
-const Symbol Blue_c ("Blue");
-const Symbol Brown_c ("Brown");
-const Symbol Chartreuse_c ("Chartreuse");
-const Symbol Cyan_c ("Cyan");
-const Symbol DarkBlue_c ("DarkBlue");
-const Symbol DarkGray_c ("DarkGray");
-const Symbol DarkGreen_c ("DarkGreen");
-const Symbol DarkRed_c ("DarkRed");
-const Symbol DarkViolet_c ("DarkViolet");
-const Symbol Gainsboro_c ("Gainsboro");	// a very light gray
-const Symbol Green_c ("Green");
-const Symbol Gray_c ("Gray");
-const Symbol Fuchsia_c ("Fuchsia");
-const Symbol Gold_c ("Gold");
-const Symbol GoldenRod_c ("GoldenRod");
-const Symbol LightBlue_c ("LightBlue");
-const Symbol LightGray_c ("LightGray");
-const Symbol Magenta_c ("Magenta");
-const Symbol Maroon_c ("Maroon");
-const Symbol Navy_c ("Navy");
-const Symbol Olive_c ("Olive");
-const Symbol Pink_c ("Pink");
-const Symbol Purple_c ("Purple");
-const Symbol Red_c ("Red");
-const Symbol RoyalBlue_c ("RoyalBlue");
-const Symbol SlateGray_c ("SlateGray");
-const Symbol Teal_c ("Teal");
-const Symbol Turquoise_c ("Turquoise");
-const Symbol Violet_c ("Violet");
-const Symbol White_c ("White");
-const Symbol Yellow_c ("Yellow");
-const Symbol Vague_c ("Vague");
+const Symbol Aqua_c("Aqua");
+const Symbol Black_c("Black");
+const Symbol Blue_c("Blue");
+const Symbol Brown_c("Brown");
+const Symbol Chartreuse_c("Chartreuse");
+const Symbol Cyan_c("Cyan");
+const Symbol DarkBlue_c("DarkBlue");
+const Symbol DarkGray_c("DarkGray");
+const Symbol DarkGreen_c("DarkGreen");
+const Symbol DarkRed_c("DarkRed");
+const Symbol DarkViolet_c("DarkViolet");
+const Symbol Gainsboro_c("Gainsboro"); // a very light gray
+const Symbol Green_c("Green");
+const Symbol Gray_c("Gray");
+const Symbol Fuchsia_c("Fuchsia");
+const Symbol Gold_c("Gold");
+const Symbol GoldenRod_c("GoldenRod");
+const Symbol LightBlue_c("LightBlue");
+const Symbol LightGray_c("LightGray");
+const Symbol Magenta_c("Magenta");
+const Symbol Maroon_c("Maroon");
+const Symbol Navy_c("Navy");
+const Symbol Olive_c("Olive");
+const Symbol Pink_c("Pink");
+const Symbol Purple_c("Purple");
+const Symbol Red_c("Red");
+const Symbol RoyalBlue_c("RoyalBlue");
+const Symbol SlateGray_c("SlateGray");
+const Symbol Teal_c("Teal");
+const Symbol Turquoise_c("Turquoise");
+const Symbol Violet_c("Violet");
+const Symbol White_c("White");
+const Symbol Yellow_c("Yellow");
+const Symbol Vague_c("Vague");
 
 // standard Shape property values
-const Symbol Circle_c ("Circle");
-const Symbol Empty_Circle_c ("Empty_Circle");
-const Symbol Filled_Circle_c ("Filled_Circle");
-const Symbol Top_Semicircle_c ("Top_Semicircle");
-const Symbol Empty_Top_Semicircle_c ("Empty_Top_Semicircle");
-const Symbol Filled_Top_Semicircle_c ("Filled_Top_Semicircle");
-const Symbol Rectangle_c ("Rectangle");
-const Symbol Empty_Rectangle_c ("Empty_Rectangle");
-const Symbol Filled_Rectangle_c ("Filled_Rectangle");
-const Symbol Square_c ("Square");
-const Symbol Empty_Square_c ("Empty_Square");
-const Symbol Filled_Square_c ("Filled_Square");
-const Symbol Button_c ("Button");
-const Symbol Empty_Button_c ("Empty_Button");
-const Symbol Filled_Button_c ("Filled_Button");
+const Symbol Circle_c("Circle");
+const Symbol Empty_Circle_c("Empty_Circle");
+const Symbol Filled_Circle_c("Filled_Circle");
+const Symbol Top_Semicircle_c("Top_Semicircle");
+const Symbol Empty_Top_Semicircle_c("Empty_Top_Semicircle");
+const Symbol Filled_Top_Semicircle_c("Filled_Top_Semicircle");
+const Symbol Rectangle_c("Rectangle");
+const Symbol Empty_Rectangle_c("Empty_Rectangle");
+const Symbol Filled_Rectangle_c("Filled_Rectangle");
+const Symbol Square_c("Square");
+const Symbol Empty_Square_c("Empty_Square");
+const Symbol Filled_Square_c("Filled_Square");
+const Symbol Button_c("Button");
+const Symbol Empty_Button_c("Empty_Button");
+const Symbol Filled_Button_c("Filled_Button");
 const Symbol Triangle_c("Triangle");
 const Symbol Empty_Triangle_c("Empty_Triangle");
 const Symbol Filled_Triangle_c("Filled_Triangle");
@@ -154,12 +154,12 @@ const Symbol Filled_Hill_c("Filled_Hill");
 const Symbol Inv_Hill_c("Inv_Hill");
 const Symbol Inv_Empty_Hill_c("Inv_Empty_Hill");
 const Symbol Inv_Filled_Hill_c("Inv_Filled_Hill");
-const Symbol Cross_Hairs_c ("Cross_Hairs");
-const Symbol Cursor_Arrow_c ("Cursor_Arrow");
-const Symbol Up_Arrow_c ("Up_Arrow");
-const Symbol Down_Arrow_c ("Down_Arrow");
-const Symbol Left_Arrow_c ("Left_Arrow");
-const Symbol Right_Arrow_c ("Right_Arrow");
+const Symbol Cross_Hairs_c("Cross_Hairs");
+const Symbol Cursor_Arrow_c("Cursor_Arrow");
+const Symbol Up_Arrow_c("Up_Arrow");
+const Symbol Down_Arrow_c("Down_Arrow");
+const Symbol Left_Arrow_c("Left_Arrow");
+const Symbol Right_Arrow_c("Right_Arrow");
 const Symbol Line_c("Line");
 const Symbol Polygon_c("Polygon");
 const Symbol Empty_Polygon_c("Empty_Polygon");
@@ -217,7 +217,7 @@ const Symbol Timbre_c("Timbre");
 const Symbol Present_c("Present");
 const Symbol Next_c("Next");
 const Symbol Time_stamp_c("Time_stamp");
-const Symbol External_c("External");	// use when distinct localized stream objects unnecessary
+const Symbol External_c("External"); // use when distinct localized stream objects unnecessary
 const Symbol Default_physical_stream_c("DefaultStream");
 const Symbol Default_psychological_stream_c("SrcDefaultStream");
 const Symbol Speech_c("Speech");
@@ -233,10 +233,10 @@ const Symbol Signal_c("Signal");
 const Symbol Start_c("Start");
 const Symbol Stop_c("Stop");
 const Symbol Halt_c("Halt");
-const Symbol End_c("End");					// For temporal
-const Symbol Increment_c("Increment");		// For temporal
+const Symbol End_c("End");             // For temporal
+const Symbol Increment_c("Increment"); // For temporal
 
-//Char object properties (added for flanker task)
+// Char object properties (added for flanker task)
 const Symbol Char_Line_Vert_c("Char_Line_Vert");
 const Symbol Char_Line_Horiz_c("Char_Line_Horiz");
 const Symbol Char_Line_Diag_c("Char_Line_Diag");
@@ -246,12 +246,12 @@ const Symbol Char_Point_Right_c("Char_Point_Right");
 const Symbol Char_Curve_Open_c("Char_Curve_Open");
 const Symbol Char_Curve_Closed_c("Char_Curve_Closed");
 
-//MWalton: Attention properties
+// MWalton: Attention properties
 const Symbol Focus_c("Focus");
 const Symbol Set_attn_c("Set");
 
-//MWalton: Attentional Saliency Properties
-//const Symbol Gaussian_c("Gaussian");
+// MWalton: Attentional Saliency Properties
+// const Symbol Gaussian_c("Gaussian");
 const Symbol Attention_c("Attend_to");
 const Symbol Cue_c("Cue");
 const Symbol Region_c("Region");

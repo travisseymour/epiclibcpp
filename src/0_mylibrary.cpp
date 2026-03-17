@@ -10,7 +10,7 @@
 #include <pybind11/pytypes.h>
 namespace py = pybind11;
 
-using namespace pybind11::literals;  // to bring in the `_a` literal
+using namespace pybind11::literals; // to bring in the `_a` literal
 
 #include <iostream>
 #include <cstring>
@@ -70,7 +70,9 @@ extern Output_tee Exception_out;
 extern Output_tee Stats_out;
 extern Output_tee Info_out;
 
-class ProductionSystem: public Parsimonious_Production_System::Production_System {};
+class ProductionSystem : public Parsimonious_Production_System::Production_System
+{
+};
 
 
 // ********************************************************
@@ -85,15 +87,14 @@ string describe_parameters_u(const Model& model)
     model.get_human_ptr()->describe_parameters(temp_out);
     temp_out.remove_stream(temp_str_stream);
     return temp_str_stream.str();
-
 }
 
-void set_visual_encoder_ptr(const Model& model, Visual_encoder_base * encoder)
+void set_visual_encoder_ptr(const Model& model, Visual_encoder_base* encoder)
 {
     model.get_human_ptr()->set_visual_encoder_ptr(encoder);
 }
 
-void set_auditory_encoder_ptr(const Model& model, Auditory_encoder_base * encoder)
+void set_auditory_encoder_ptr(const Model& model, Auditory_encoder_base* encoder)
 {
     model.get_human_ptr()->set_aditory_encoder_ptr(encoder);
 }
@@ -103,255 +104,315 @@ void set_auditory_encoder_ptr(const Model& model, Auditory_encoder_base * encode
 // Trampoline Classes
 // ********************************************************
 
-class PyDevice_base : public Device_base {
+class PyDevice_base : public Device_base
+{
 public:
     using Device_base::Device_base;
 
     // Trampoline (need one for each virtual function)
-    void set_parameter_string(const std::string& _str) override {
-        PYBIND11_OVERRIDE(void, /* Return type */
-        Device_base, /* Parent class */
-        set_parameter_string, /* Name of function in C++ (must match Python name) */
-        _str /* parameter(s) */
+    void set_parameter_string(const std::string& _str) override
+    {
+        PYBIND11_OVERRIDE(void,                 /* Return type */
+                          Device_base,          /* Parent class */
+                          set_parameter_string, /* Name of function in C++ (must match Python name) */
+                          _str                  /* parameter(s) */
         );
     }
 
-    std::string get_parameter_string() const override {
-        PYBIND11_OVERRIDE(std::string, Device_base, get_parameter_string, /* no args */ );
+    std::string get_parameter_string() const override
+    {
+        PYBIND11_OVERRIDE(std::string, Device_base, get_parameter_string, /* no args */);
     }
 
-    void initialize() override {
-        PYBIND11_OVERRIDE( void, Device_base,  initialize, /* no args */ );
+    void initialize() override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, initialize, /* no args */);
     }
 
-    std::string processor_info() const override {
-        PYBIND11_OVERRIDE( std::string, Device_base, processor_info, /* no args */ );
+    std::string processor_info() const override
+    {
+        PYBIND11_OVERRIDE(std::string, Device_base, processor_info, /* no args */);
     }
 
-    void display() const override {
-        PYBIND11_OVERRIDE(void, Device_base, display, /* no args */ );
+    void display() const override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, display, /* no args */);
     }
 
-    void handle_Start_event() override {
-        PYBIND11_OVERRIDE(void, Device_base, handle_Start_event, /* no args */ );
+    void handle_Start_event() override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, handle_Start_event, /* no args */);
     }
 
-    void handle_Stop_event() override {
-        PYBIND11_OVERRIDE(void, Device_base, handle_Stop_event, /* no args */ );
+    void handle_Stop_event() override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, handle_Stop_event, /* no args */);
     }
 
-    void handle_Report_event(long duration) override {
+    void handle_Report_event(long duration) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Report_event, duration);
     }
 
-    void handle_Delay_event(const Symbol& _type, const Symbol& datum,
-                             const Symbol& object_name, const Symbol& property_name,
-                             const Symbol& property_value) override {
-        PYBIND11_OVERRIDE(void, Device_base, handle_Delay_event, _type, datum,
-                               object_name, property_name, property_value);
+    void handle_Delay_event(const Symbol& _type, const Symbol& datum, const Symbol& object_name,
+                            const Symbol& property_name, const Symbol& property_value) override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, handle_Delay_event, _type, datum, object_name, property_name,
+                          property_value);
     }
 
-    void handle_Keystroke_event(const Symbol& key_name) override {
+    void handle_Keystroke_event(const Symbol& key_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Keystroke_event, key_name);
     }
 
-    void handle_Type_In_event(const Symbol& type_in_string) override {
+    void handle_Type_In_event(const Symbol& type_in_string) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Type_In_event, type_in_string);
     }
 
-    void handle_Hold_event(const Symbol& button_name) override {
+    void handle_Hold_event(const Symbol& button_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Hold_event, button_name);
     }
 
-    void handle_Release_event(const Symbol& button_name) override {
+    void handle_Release_event(const Symbol& button_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Release_event, button_name);
     }
 
-    void handle_Click_event(const Symbol& button_name) override {
+    void handle_Click_event(const Symbol& button_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Click_event, button_name);
     }
 
-    void handle_Double_Click_event(const Symbol& button_name) override {
+    void handle_Double_Click_event(const Symbol& button_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Double_Click_event, button_name);
     }
 
-    void handle_Point_event(const Symbol& target_name) override {
+    void handle_Point_event(const Symbol& target_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Point_event, target_name);
     }
 
-    void handle_Ply_event(const Symbol& cursor_name, const Symbol& target_name,
-                           GU::Point new_location, GU::Polar_vector movement_vector) override {
-        PYBIND11_OVERRIDE(void, Device_base, handle_Ply_event, cursor_name,
-                               target_name, new_location, movement_vector);
+    void handle_Ply_event(const Symbol& cursor_name, const Symbol& target_name, GU::Point new_location,
+                          GU::Polar_vector movement_vector) override
+    {
+        PYBIND11_OVERRIDE(void, Device_base, handle_Ply_event, cursor_name, target_name, new_location, movement_vector);
     }
 
-    void handle_Vocal_event(const Symbol& vocal_input) override {
+    void handle_Vocal_event(const Symbol& vocal_input) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Vocal_event, vocal_input);
     }
 
-    void handle_Vocal_event(const Symbol& vocal_input, long duration) override {
+    void handle_Vocal_event(const Symbol& vocal_input, long duration) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Vocal_event, vocal_input, duration);
     }
 
-    void handle_VisualFocusChange_event(const Symbol& object_name) override {
+    void handle_VisualFocusChange_event(const Symbol& object_name) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_VisualFocusChange_event, object_name);
     }
 
-    void handle_Eyemovement_Start_event(const Symbol& target_name, GU::Point new_location) override {
+    void handle_Eyemovement_Start_event(const Symbol& target_name, GU::Point new_location) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Eyemovement_Start_event, target_name, new_location);
     }
 
-    void handle_Eyemovement_End_event(const Symbol& target_name, GU::Point new_location) override {
+    void handle_Eyemovement_End_event(const Symbol& target_name, GU::Point new_location) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_Eyemovement_End_event, target_name, new_location);
     }
 
-    void handle_HLGet_event(const Symbol_list_t& props, const Symbol_list_t& values, const Symbol& tag) override {
+    void handle_HLGet_event(const Symbol_list_t& props, const Symbol_list_t& values, const Symbol& tag) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_HLGet_event, props, values, tag);
     }
 
-    void handle_HLPut_event(const Symbol_list_t& props, const Symbol_list_t& values) override {
+    void handle_HLPut_event(const Symbol_list_t& props, const Symbol_list_t& values) override
+    {
         PYBIND11_OVERRIDE(void, Device_base, handle_HLPut_event, props, values);
     }
-
 };
 
 
-struct PyView_base : public View_base {
+struct PyView_base : public View_base
+{
+    using View_base::View_base; // inherit ctors (default or otherwise)
 
-    using View_base::View_base;  // inherit ctors (default or otherwise)
-
-    void clear() override {
+    void clear() override
+    {
         PYBIND11_OVERRIDE(void, View_base, clear, /* no args */);
     }
 
-    void notify_eye_movement(GU::Point p) override {
+    void notify_eye_movement(GU::Point p) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_eye_movement, p);
     }
 
-    void notify_object_appear(const Symbol& s, GU::Point p, GU::Size sz) override {
+    void notify_object_appear(const Symbol& s, GU::Point p, GU::Size sz) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_object_appear, s, p, sz);
     }
 
-    void notify_object_disappear(const Symbol& s) override {
+    void notify_object_disappear(const Symbol& s) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_object_disappear, s);
     }
 
-    void notify_object_reappear(const Symbol& s) override {
+    void notify_object_reappear(const Symbol& s) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_object_reappear, s);
     }
 
-    void notify_erase_object(const Symbol& s) override {
+    void notify_erase_object(const Symbol& s) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_erase_object, s);
     }
 
-    void notify_visual_location_changed(const Symbol& symbol, GU::Point point) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_visual_location_changed,symbol,point);
+    void notify_visual_location_changed(const Symbol& symbol, GU::Point point) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_visual_location_changed, symbol, point);
     }
 
-    void notify_visual_size_changed(const Symbol& symbol, GU::Size size) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_visual_size_changed,symbol,size);
+    void notify_visual_size_changed(const Symbol& symbol, GU::Size size) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_visual_size_changed, symbol, size);
     }
 
-    void notify_visual_property_changed(const Symbol& symbol1, const Symbol& symbol2, const Symbol& symbol3) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_visual_property_changed,symbol1,symbol2,symbol3);
+    void notify_visual_property_changed(const Symbol& symbol1, const Symbol& symbol2, const Symbol& symbol3) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_visual_property_changed, symbol1, symbol2, symbol3);
     }
 
-    void notify_auditory_stream_appear(const Symbol& symbol, double d1, double d2, GU::Point point) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_appear,symbol,d1,d2,point);
+    void notify_auditory_stream_appear(const Symbol& symbol, double d1, double d2, GU::Point point) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_appear, symbol, d1, d2, point);
     }
 
-    void notify_auditory_stream_disappear(const Symbol& symbol) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_disappear,symbol);
+    void notify_auditory_stream_disappear(const Symbol& symbol) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_disappear, symbol);
     }
 
-    void notify_auditory_stream_location_changed(const Symbol& symbol, GU::Point point) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_location_changed,symbol,point);
+    void notify_auditory_stream_location_changed(const Symbol& symbol, GU::Point point) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_location_changed, symbol, point);
     }
 
-    void notify_auditory_stream_pitch_changed(const Symbol& symbol, double d) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_pitch_changed,symbol,d);
+    void notify_auditory_stream_pitch_changed(const Symbol& symbol, double d) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_pitch_changed, symbol, d);
     }
 
-    void notify_auditory_stream_loudness_changed(const Symbol& symbol, double d) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_loudness_changed,symbol,d);
+    void notify_auditory_stream_loudness_changed(const Symbol& symbol, double d) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_loudness_changed, symbol, d);
     }
 
-    void notify_auditory_stream_size_changed(const Symbol& symbol, GU::Size size) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_size_changed,symbol,size );
+    void notify_auditory_stream_size_changed(const Symbol& symbol, GU::Size size) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_size_changed, symbol, size);
     }
 
-    void notify_auditory_stream_property_changed(const Symbol& symbol1, const Symbol& symbol2, const Symbol& symbol3) override {
-        PYBIND11_OVERRIDE(void,View_base,notify_auditory_stream_property_changed,symbol1,symbol2,symbol3 );
+    void notify_auditory_stream_property_changed(const Symbol& symbol1, const Symbol& symbol2,
+                                                 const Symbol& symbol3) override
+    {
+        PYBIND11_OVERRIDE(void, View_base, notify_auditory_stream_property_changed, symbol1, symbol2, symbol3);
     }
 
-    void notify_auditory_sound_start(const Symbol& sym1, const Symbol& sym2, long num1, GU::Point point, const Symbol& sym3, double num2) override {
+    void notify_auditory_sound_start(const Symbol& sym1, const Symbol& sym2, long num1, GU::Point point,
+                                     const Symbol& sym3, double num2) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_auditory_sound_start, sym1, sym2, num1, point, sym3, num2);
     }
 
-    void notify_auditory_speech_start(const Speech_word& word) override {
+    void notify_auditory_speech_start(const Speech_word& word) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_auditory_speech_start, word);
     }
 
-    void notify_auditory_sound_stop(const Symbol& sym) override {
+    void notify_auditory_sound_stop(const Symbol& sym) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_auditory_sound_stop, sym);
     }
 
-    void notify_erase_sound(const Symbol& sym) override {
+    void notify_erase_sound(const Symbol& sym) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_erase_sound, sym);
     }
 
-    void notify_auditory_sound_property_changed(const Symbol& sym1, const Symbol& sym2, const Symbol& sym3) override {
+    void notify_auditory_sound_property_changed(const Symbol& sym1, const Symbol& sym2, const Symbol& sym3) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_auditory_sound_property_changed, sym1, sym2, sym3);
     }
 
-    void notify_append_text(const std::string& str) override {
+    void notify_append_text(const std::string& str) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_append_text, str);
     }
 
-    void notify_time(long num) override {
+    void notify_time(long num) override
+    {
         PYBIND11_OVERRIDE(void, View_base, notify_time, num);
     }
-
 };
 
-class PyVisual_encoder_base : public Visual_encoder_base {
-
+class PyVisual_encoder_base : public Visual_encoder_base
+{
     /* Inherit the constructors */
     using Visual_encoder_base::Visual_encoder_base;
 
     /* Trampoline (need one for each virtual function) */
-    void initialize() override {
+    void initialize() override
+    {
         PYBIND11_OVERRIDE(void, Visual_encoder_base, initialize, /* no args */);
     }
 
-    bool set_object_property(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value, long encoding_time) override {
-        PYBIND11_OVERRIDE(bool, Visual_encoder_base, set_object_property, object_name, property_name, property_value, encoding_time);
+    bool set_object_property(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value,
+                             long encoding_time) override
+    {
+        PYBIND11_OVERRIDE(bool, Visual_encoder_base, set_object_property, object_name, property_name, property_value,
+                          encoding_time);
     }
 
-    bool handle_Delay_event(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value) override {
+    bool handle_Delay_event(const Symbol& object_name, const Symbol& property_name,
+                            const Symbol& property_value) override
+    {
         PYBIND11_OVERRIDE(bool, Visual_encoder_base, handle_Delay_event, object_name, property_name, property_value);
     }
 };
 
-class PyAuditory_encoder_base : public Auditory_encoder_base {
+class PyAuditory_encoder_base : public Auditory_encoder_base
+{
 public:
     /* Inherit the constructors */
     using Auditory_encoder_base::Auditory_encoder_base;
 
     /* Trampoline (need one for each virtual function) */
-    void initialize() override {
+    void initialize() override
+    {
         PYBIND11_OVERRIDE(void, Auditory_encoder_base, initialize, /* no args */);
     }
 
-    bool set_object_property(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value, long encoding_time) override {
-        PYBIND11_OVERRIDE(bool, Auditory_encoder_base, set_object_property, object_name, property_name, property_value, encoding_time);
+    bool set_object_property(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value,
+                             long encoding_time) override
+    {
+        PYBIND11_OVERRIDE(bool, Auditory_encoder_base, set_object_property, object_name, property_name, property_value,
+                          encoding_time);
     }
 
-    bool handle_Delay_event(const Symbol& object_name, const Symbol& property_name, const Symbol& property_value) override {
+    bool handle_Delay_event(const Symbol& object_name, const Symbol& property_name,
+                            const Symbol& property_value) override
+    {
         PYBIND11_OVERRIDE(bool, Auditory_encoder_base, handle_Delay_event, object_name, property_name, property_value);
     }
 
-    GU::Point recode_location(GU::Point original_location) override {
+    GU::Point recode_location(GU::Point original_location) override
+    {
         PYBIND11_OVERRIDE(GU::Point, Auditory_encoder_base, recode_location, original_location);
     }
 };
@@ -361,7 +422,8 @@ public:
 // *********************************************************
 
 
-PYBIND11_MODULE(epiclib, m) {
+PYBIND11_MODULE(epiclib, m)
+{
     m.doc() = "EPICLib bindings for Python - Travis Seymour, PhD";
     // py::bind_vector<std::vector<Parameter_specification>>(m, "Parameter_specification_list_t");
     // py::bind_vector<std::vector<Symbol>>(m, "Symbol_list_t");
@@ -371,81 +433,72 @@ PYBIND11_MODULE(epiclib, m) {
           py::doc("access to describe_parameters() without referencing a Human pointer"));
 
     m.def("set_visual_encoder_ptr", &set_visual_encoder_ptr,
-        py::doc("access to set_visual_encoder_ptr() without referencing a Human pointer"));
+          py::doc("access to set_visual_encoder_ptr() without referencing a Human pointer"));
 
     m.def("set_auditory_encoder_ptr", &set_auditory_encoder_ptr,
-        py::doc("access to set_auditory_encoder_ptr() without referencing a Human pointer"));
+          py::doc("access to set_auditory_encoder_ptr() without referencing a Human pointer"));
     //---------------------
 
 
     py::class_<Device_exception>(m, "Device_exception")
         .def(py::init())
         .def(py::init<const std::string&>(), py::arg("msg_"))
-        .def(py::init<const Device_base *, const std::string&>(),py::arg("proc_ptr"), py::arg("msg_"))
-        ;
+        .def(py::init<const Device_base*, const std::string&>(), py::arg("proc_ptr"), py::arg("msg_"));
 
     py::class_<Epic_exception>(m, "Epic_exception")
         .def(py::init())
         .def(py::init<const std::string&>(), py::arg("msg_"))
-        .def(py::init<Processor *, const std::string&>(),py::arg("proc_ptr"), py::arg("msg_"))
-        ;
+        .def(py::init<Processor*, const std::string&>(), py::arg("proc_ptr"), py::arg("msg_"));
 
-    m.def("raise_device_exception", [](const std::string &str) {
-        throw Device_exception(str);
-    });
+    m.def("raise_device_exception", [](const std::string& str) { throw Device_exception(str); });
 
-    m.def("raise_epic_exception", [](const std::string &str) {
-        throw Epic_exception(str);
-    });
+    m.def("raise_epic_exception", [](const std::string& str) { throw Epic_exception(str); });
 
     // Submodule to mirror the header name for convenience:
     auto m_globals = m.def_submodule("output_tee_globals", "Global Output_tee instances");
 
     // Output_tee class (Python-facing helpers only)
-    auto pyOutputTee = py::class_<Output_tee>(m, "Output_tee")
-        .def("add_view",
-            static_cast<void (Output_tee::*)(View_base*)>(&Output_tee::add_view),
-            py::arg("view"),
-            py::keep_alive<1,2>()  // keep Python view alive while attached to this tee
-            )
-        .def("remove_view",
-            static_cast<void (Output_tee::*)(View_base*)>(&Output_tee::remove_view),
-            py::arg("view")
-            )
-        .def("add_py_stream", &Output_tee::add_py_stream, py::arg("stream"),
-             "Attach any Python object with write/flush/close.")
-        .def("remove_py_stream", &Output_tee::remove_py_stream, py::arg("stream"))
-        .def("clear_py_streams", &Output_tee::clear_py_streams)
-        .def("py_write", &Output_tee::py_write, py::arg("text"),
-             "Write a string (identical to the C++ << path).")
-        .def("py_flush", &Output_tee::py_flush)
-        .def("py_close", &Output_tee::py_close)
-        // Nice ergonomic sugar so we can do: Normal_out("hello")
-        .def("__call__", &Output_tee::py_write, py::arg("text"));
+    auto pyOutputTee =
+        py::class_<Output_tee>(m, "Output_tee")
+            .def("add_view", static_cast<void (Output_tee::*)(View_base*)>(&Output_tee::add_view), py::arg("view"),
+                 py::keep_alive<1, 2>() // keep Python view alive while attached to this tee
+                 )
+            .def("remove_view", static_cast<void (Output_tee::*)(View_base*)>(&Output_tee::remove_view),
+                 py::arg("view"))
+            .def("add_py_stream", &Output_tee::add_py_stream, py::arg("stream"),
+                 "Attach any Python object with write/flush/close.")
+            .def("remove_py_stream", &Output_tee::remove_py_stream, py::arg("stream"))
+            .def("clear_py_streams", &Output_tee::clear_py_streams)
+            .def("py_write", &Output_tee::py_write, py::arg("text"), "Write a string (identical to the C++ << path).")
+            .def("py_flush", &Output_tee::py_flush)
+            .def("py_close", &Output_tee::py_close)
+            // Nice ergonomic sugar so we can do: Normal_out("hello")
+            .def("__call__", &Output_tee::py_write, py::arg("text"));
 
     // Bind the global tee instances by reference
     m_globals.attr("Normal_out") = py::cast(&Normal_out, py::return_value_policy::reference);
-    m_globals.attr("Trace_out")  = py::cast(&Trace_out,  py::return_value_policy::reference);
-    m_globals.attr("Debug_out")  = py::cast(&Debug_out,  py::return_value_policy::reference);
-    m_globals.attr("Device_out")  = py::cast(&Device_out,  py::return_value_policy::reference);
-    m_globals.attr("Exception_out")  = py::cast(&Exception_out,  py::return_value_policy::reference);
-    m_globals.attr("Stats_out")  = py::cast(&Stats_out,  py::return_value_policy::reference);
-    m_globals.attr("Info_out")  = py::cast(&Info_out,  py::return_value_policy::reference);
+    m_globals.attr("Trace_out") = py::cast(&Trace_out, py::return_value_policy::reference);
+    m_globals.attr("Debug_out") = py::cast(&Debug_out, py::return_value_policy::reference);
+    m_globals.attr("Device_out") = py::cast(&Device_out, py::return_value_policy::reference);
+    m_globals.attr("Exception_out") = py::cast(&Exception_out, py::return_value_policy::reference);
+    m_globals.attr("Stats_out") = py::cast(&Stats_out, py::return_value_policy::reference);
+    m_globals.attr("Info_out") = py::cast(&Info_out, py::return_value_policy::reference);
 
     auto pps_globals = m.def_submodule("pps_globals", "Global PPS Output_tee instance");
-    pps_globals.attr("PPS_out")  = py::cast(&PPS_out,  py::return_value_policy::reference);
+    pps_globals.attr("PPS_out") = py::cast(&PPS_out, py::return_value_policy::reference);
 
 
     py::class_<Clause>(m, "Clause")
         .def(py::init())
-        .def(py::init<Symbol&, Symbol&, Symbol&, Symbol&>(), py::arg("tag_name"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def(py::init<Symbol&, Symbol&, Symbol&, Symbol&>(), py::arg("tag_name"), py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"))
         .def(py::init<Symbol_list_t&>(), py::arg("in_term_list"))
         .def(py::init<std::string&>(), py::arg("in_string"))
         .def(py::init<Clause&>(), py::arg("in_clause"));
 
     py::class_<Symbol>(m, "Symbol")
-        .def(py::init<const char*, bool>(), py::arg("c")="Nil", py::arg("check_for_number")=true)
-        .def(py::init<const std::string&, bool>(), py::arg("s"), py::arg("check_for_number")=true)
+        .def(py::init<const char*, bool>(), py::arg("c") = "Nil", py::arg("check_for_number") = true)
+        .def(py::init<const std::string&, bool>(), py::arg("s"), py::arg("check_for_number") = true)
         .def(py::init<double>())
         .def(py::init<int>())
         .def(py::init<long>())
@@ -470,46 +523,49 @@ PYBIND11_MODULE(epiclib, m) {
         .def("get_y", &Symbol::get_y)
         .def("get_point_vector", &Symbol::get_Point_vector)
 
-        .def("__eq__", [](const Symbol& lhs, const char * c){return lhs == c;})
-        .def("__ne__", [](const Symbol& lhs, const char * c){return lhs != c;})
-        .def("__lt__", [](const Symbol& lhs, const char * c){return lhs < c;})
-        .def("__le__", [](const Symbol& lhs, const char * c){return lhs <= c;})
-        .def("__gt__", [](const Symbol& lhs, const char * c){return lhs > c;})
-        .def("__ge__", [](const Symbol& lhs, const char * c){return lhs >= c;})
+        .def("__eq__", [](const Symbol& lhs, const char* c) { return lhs == c; })
+        .def("__ne__", [](const Symbol& lhs, const char* c) { return lhs != c; })
+        .def("__lt__", [](const Symbol& lhs, const char* c) { return lhs < c; })
+        .def("__le__", [](const Symbol& lhs, const char* c) { return lhs <= c; })
+        .def("__gt__", [](const Symbol& lhs, const char* c) { return lhs > c; })
+        .def("__ge__", [](const Symbol& lhs, const char* c) { return lhs >= c; })
 
-        .def("__eq__", [](const Symbol& lhs, const Symbol& rhs){return lhs == rhs;})
-        .def("__ne__", [](const Symbol& lhs, const Symbol& rhs){return lhs != rhs;})
-        .def("__lt__", [](const Symbol& lhs, const Symbol& rhs){return lhs < rhs;})
-        .def("__le__", [](const Symbol& lhs, const Symbol& rhs){return lhs <= rhs;})
-        .def("__gt__", [](const Symbol& lhs, const Symbol& rhs){return lhs > rhs;})
-        .def("__ge__", [](const Symbol& lhs, const Symbol& rhs){return lhs >= rhs;})
+        .def("__eq__", [](const Symbol& lhs, const Symbol& rhs) { return lhs == rhs; })
+        .def("__ne__", [](const Symbol& lhs, const Symbol& rhs) { return lhs != rhs; })
+        .def("__lt__", [](const Symbol& lhs, const Symbol& rhs) { return lhs < rhs; })
+        .def("__le__", [](const Symbol& lhs, const Symbol& rhs) { return lhs <= rhs; })
+        .def("__gt__", [](const Symbol& lhs, const Symbol& rhs) { return lhs > rhs; })
+        .def("__ge__", [](const Symbol& lhs, const Symbol& rhs) { return lhs >= rhs; })
 
-        .def("__eq__", [](const Symbol& lhs, double d){return lhs == d;})
-        .def("__ne__", [](const Symbol& lhs, double d){return lhs != d;})
-        .def("__lt__", [](const Symbol& lhs, double d){return lhs < d;})
-        .def("__le__", [](const Symbol& lhs, double d){return lhs <= d;})
-        .def("__gt__", [](const Symbol& lhs, double d){return lhs > d;})
-        .def("__ge__", [](const Symbol& lhs, double d){return lhs >= d;})
+        .def("__eq__", [](const Symbol& lhs, double d) { return lhs == d; })
+        .def("__ne__", [](const Symbol& lhs, double d) { return lhs != d; })
+        .def("__lt__", [](const Symbol& lhs, double d) { return lhs < d; })
+        .def("__le__", [](const Symbol& lhs, double d) { return lhs <= d; })
+        .def("__gt__", [](const Symbol& lhs, double d) { return lhs > d; })
+        .def("__ge__", [](const Symbol& lhs, double d) { return lhs >= d; })
 
         .def("swap", &Symbol::swap)
         .def("__repr__", [](const Symbol& sw) {
-              ostringstream os;
-              if (sw.has_string_value()) {
+            ostringstream os;
+            if (sw.has_string_value()) {
                 os << sw.c_str();
-              } else if (sw.has_single_numeric_value())  {
+            }
+            else if (sw.has_single_numeric_value()) {
                 os << sw.get_numeric_value();
-              } else if (sw.has_Point_numeric_value()) {
+            }
+            else if (sw.has_Point_numeric_value()) {
                 Point p = sw.get_Point();
                 os << "Point(" << p.x << ", " << p.y << ")";
-              } else if (sw.has_multiple_numeric_value()) {
+            }
+            else if (sw.has_multiple_numeric_value()) {
                 os << sw.get_Point_vector();
-              } else {
+            }
+            else {
                 os << "<empty>";
-              }
+            }
 
-              return os.str();
-        })
-        ;
+            return os.str();
+        });
 
     py::class_<Speech_word>(m, "Speech_word")
         .def(py::init<>())
@@ -520,18 +576,18 @@ PYBIND11_MODULE(epiclib, m) {
         .def_readwrite("pitch", &Speech_word::pitch)
         .def_readwrite("loudness", &Speech_word::loudness)
         .def_readwrite("duration", &Speech_word::duration)
-        .def_readwrite("level_left", &Speech_word::level_left)  // = 0
-        .def_readwrite("level_right", &Speech_word::level_right)  // = 0
+        .def_readwrite("level_left", &Speech_word::level_left)   // = 0
+        .def_readwrite("level_right", &Speech_word::level_right) // = 0
         .def_readwrite("content", &Speech_word::content)
         .def_readwrite("speaker_gender", &Speech_word::speaker_gender)
         .def_readwrite("speaker_id", &Speech_word::speaker_id)
         .def_readwrite("utterance_id", &Speech_word::utterance_id)
         .def("__repr__", [](const Speech_word& sw) {
-              ostringstream os;
-              os << "Speech_word(name=" << sw.name.c_str() << ", location=Point(" << sw.location.x << "," << sw.location.y << "), content=" << sw.content.c_str() << ")";
-              return os.str();
-        })
-        ;
+            ostringstream os;
+            os << "Speech_word(name=" << sw.name.c_str() << ", location=Point(" << sw.location.x << "," << sw.location.y
+               << "), content=" << sw.content.c_str() << ")";
+            return os.str();
+        });
 
     py::class_<Device_base, PyDevice_base, std::unique_ptr<Device_base>>(m, "Device_base")
         .def(py::init<const std::string&, Output_tee&>(), py::arg("Id"), py::arg("ot").none(true))
@@ -544,7 +600,8 @@ PYBIND11_MODULE(epiclib, m) {
         .def("handle_Start_event", &Device_base::handle_Start_event)
         .def("handle_Stop_event", &Device_base::handle_Stop_event)
         .def("handle_Report_event", &Device_base::handle_Report_event, py::arg("duration"))
-        .def("handle_Delay_event", &Device_base::handle_Delay_event, py::arg("_type"), py::arg("datum"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("handle_Delay_event", &Device_base::handle_Delay_event, py::arg("_type"), py::arg("datum"),
+             py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
         .def("handle_Keystroke_event", &Device_base::handle_Keystroke_event, py::arg("key_name"))
         .def("handle_Type_In_event", &Device_base::handle_Type_In_event, py::arg("type_in_string"))
         .def("handle_Hold_event", &Device_base::handle_Hold_event, py::arg("button_name"))
@@ -552,47 +609,75 @@ PYBIND11_MODULE(epiclib, m) {
         .def("handle_Click_event", &Device_base::handle_Click_event, py::arg("button_name"))
         .def("handle_Double_Click_event", &Device_base::handle_Double_Click_event, py::arg("button_name"))
         .def("handle_Point_event", &Device_base::handle_Point_event, py::arg("target_name"))
-        .def("handle_Ply_event", &Device_base::handle_Ply_event, py::arg("cursor_name"), py::arg("target_name"), py::arg("new_location"), py::arg("movement_vector"))
-        .def("handle_Vocal_event", static_cast<void (Device_base::*)(const Symbol&)>(&Device_base::handle_Vocal_event), py::arg("vocal_input"))
-        .def("handle_Vocal_event", static_cast<void (Device_base::*)(const Symbol&, long)>(&Device_base::handle_Vocal_event), py::arg("vocal_input"), py::arg("duration"))
+        .def("handle_Ply_event", &Device_base::handle_Ply_event, py::arg("cursor_name"), py::arg("target_name"),
+             py::arg("new_location"), py::arg("movement_vector"))
+        .def("handle_Vocal_event", static_cast<void (Device_base::*)(const Symbol&)>(&Device_base::handle_Vocal_event),
+             py::arg("vocal_input"))
+        .def("handle_Vocal_event",
+             static_cast<void (Device_base::*)(const Symbol&, long)>(&Device_base::handle_Vocal_event),
+             py::arg("vocal_input"), py::arg("duration"))
         .def("handle_VisualFocusChange_event", &Device_base::handle_VisualFocusChange_event, py::arg("object_name"))
-        .def("handle_Eyemovement_Start_event", &Device_base::handle_Eyemovement_Start_event, py::arg("target_name"), py::arg("new_location"))
-        .def("handle_Eyemovement_End_event", &Device_base::handle_Eyemovement_End_event, py::arg("target_name"), py::arg("new_location"))
-        .def("handle_HLGet_event", &Device_base::handle_HLGet_event, py::arg("props"), py::arg("values"), py::arg("tag"))
+        .def("handle_Eyemovement_Start_event", &Device_base::handle_Eyemovement_Start_event, py::arg("target_name"),
+             py::arg("new_location"))
+        .def("handle_Eyemovement_End_event", &Device_base::handle_Eyemovement_End_event, py::arg("target_name"),
+             py::arg("new_location"))
+        .def("handle_HLGet_event", &Device_base::handle_HLGet_event, py::arg("props"), py::arg("values"),
+             py::arg("tag"))
         .def("handle_HLPut_event", &Device_base::handle_HLPut_event, py::arg("props"), py::arg("values"))
         .def("get_time", &Device_base::get_time)
         .def("get_trace", &Device_base::get_trace)
         .def("set_trace", &Device_base::set_trace, py::arg("trace_"))
-        .def("make_visual_object_appear", static_cast<void (Device_base::*)(const Symbol&)>(&Device_base::make_visual_object_appear), py::arg("object_name"))
-        .def("make_visual_object_appear", static_cast<void (Device_base::*)(const Symbol&, GU::Point, GU::Size)>(&Device_base::make_visual_object_appear), py::arg("object_name"), py::arg("location"), py::arg("size"))
-        .def("set_visual_object_location", &Device_base::set_visual_object_location, py::arg("object_name"), py::arg("new_location"))
-        .def("set_visual_object_size", &Device_base::set_visual_object_size, py::arg("object_name"), py::arg("new_size"))
-        .def("set_visual_object_property", &Device_base::set_visual_object_property, py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("make_visual_object_appear",
+             static_cast<void (Device_base::*)(const Symbol&)>(&Device_base::make_visual_object_appear),
+             py::arg("object_name"))
+        .def("make_visual_object_appear",
+             static_cast<void (Device_base::*)(const Symbol&, GU::Point, GU::Size)>(
+                 &Device_base::make_visual_object_appear),
+             py::arg("object_name"), py::arg("location"), py::arg("size"))
+        .def("set_visual_object_location", &Device_base::set_visual_object_location, py::arg("object_name"),
+             py::arg("new_location"))
+        .def("set_visual_object_size", &Device_base::set_visual_object_size, py::arg("object_name"),
+             py::arg("new_size"))
+        .def("set_visual_object_property", &Device_base::set_visual_object_property, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"))
         .def("make_visual_object_disappear", &Device_base::make_visual_object_disappear, py::arg("object_name"))
-        .def("set_auditory_stream_location", &Device_base::set_auditory_stream_location, py::arg("name"), py::arg("location"))
+        .def("set_auditory_stream_location", &Device_base::set_auditory_stream_location, py::arg("name"),
+             py::arg("location"))
         .def("set_auditory_stream_size", &Device_base::set_auditory_stream_size, py::arg("name"), py::arg("size"))
-        .def("set_auditory_stream_property", &Device_base::set_auditory_stream_property, py::arg("name"), py::arg("propname"), py::arg("propvalue"))
+        .def("set_auditory_stream_property", &Device_base::set_auditory_stream_property, py::arg("name"),
+             py::arg("propname"), py::arg("propvalue"))
         .def("make_auditory_event", &Device_base::make_auditory_event, py::arg("message"))
-        .def("make_auditory_sound_event", &Device_base::make_auditory_sound_event, py::arg("name"), py::arg("stream"), py::arg("location"), py::arg("timbre"), py::arg("loudness"), py::arg("duration"), py::arg("intrinsic_duration"))
-        .def("make_auditory_sound_start", &Device_base::make_auditory_sound_start, py::arg("name"), py::arg("stream"), py::arg("location"), py::arg("timbre"), py::arg("loudness"), py::arg("intrinsic_duration"))
+        .def("make_auditory_sound_event", &Device_base::make_auditory_sound_event, py::arg("name"), py::arg("stream"),
+             py::arg("location"), py::arg("timbre"), py::arg("loudness"), py::arg("duration"),
+             py::arg("intrinsic_duration"))
+        .def("make_auditory_sound_start", &Device_base::make_auditory_sound_start, py::arg("name"), py::arg("stream"),
+             py::arg("location"), py::arg("timbre"), py::arg("loudness"), py::arg("intrinsic_duration"))
         .def("make_auditory_sound_stop", &Device_base::make_auditory_sound_stop, py::arg("name"))
-        .def("set_auditory_sound_property", &Device_base::set_auditory_sound_property, py::arg("name"), py::arg("propname"), py::arg("propvalue"))
+        .def("set_auditory_sound_property", &Device_base::set_auditory_sound_property, py::arg("name"),
+             py::arg("propname"), py::arg("propvalue"))
         .def("make_auditory_speech_event", &Device_base::make_auditory_speech_event, py::arg("word"))
-        .def("make_high_level_input_appear", &Device_base::make_high_level_input_appear, py::arg("object_name"), py::arg("props"), py::arg("values"), py::arg("tag"))
+        .def("make_high_level_input_appear", &Device_base::make_high_level_input_appear, py::arg("object_name"),
+             py::arg("props"), py::arg("values"), py::arg("tag"))
         .def("make_high_level_input_disappear", &Device_base::make_high_level_input_disappear, py::arg("object_name"))
-        .def("schedule_delay_event", (void (Device_base::*)(long)) &Device_base::schedule_delay_event, py::arg("delay"))
-        .def("schedule_delay_event", (void (Device_base::*)(long, const Symbol&, const Symbol&)) &Device_base::schedule_delay_event, py::arg("delay"), py::arg("delay_type"), py::arg("delay_datum"))
-        .def("schedule_delay_event", (void (Device_base::*)(long, const Symbol&, const Symbol&, const Symbol&, const Symbol&)) &Device_base::schedule_delay_event, py::arg("delay"), py::arg("delay_type"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("schedule_delay_event", (void(Device_base::*)(long)) & Device_base::schedule_delay_event, py::arg("delay"))
+        .def("schedule_delay_event",
+             (void(Device_base::*)(long, const Symbol&, const Symbol&)) & Device_base::schedule_delay_event,
+             py::arg("delay"), py::arg("delay_type"), py::arg("delay_datum"))
+        .def("schedule_delay_event",
+             (void(Device_base::*)(long, const Symbol&, const Symbol&, const Symbol&, const Symbol&)) &
+                 Device_base::schedule_delay_event,
+             py::arg("delay"), py::arg("delay_type"), py::arg("object_name"), py::arg("property_name"),
+             py::arg("property_value"))
 
         .def("make_report", &Device_base::make_report, py::arg("time"), py::arg("duration"))
-        .def("set_human_parameter", &Device_base::set_human_parameter, py::arg("proc_name"), py::arg("param_name"), py::arg("spec"))
+        .def("set_human_parameter", &Device_base::set_human_parameter, py::arg("proc_name"), py::arg("param_name"),
+             py::arg("spec"))
         .def("get_human_prs_filename", &Device_base::get_human_prs_filename)
         .def("stop_simulation", &Device_base::stop_simulation)
-        .def("write", &Device_base::write, py::arg("msg"))
-        ;
+        .def("write", &Device_base::write, py::arg("msg"));
 
     py::class_<Model, std::unique_ptr<Model>>(m, "Model")
-        .def(py::init<Device_base *>(), py::arg("device_ptr_"))
+        .def(py::init<Device_base*>(), py::arg("device_ptr_"))
         .def("get_human_ptr", &Model::get_human_ptr)
         .def("get_device_ptr", &Model::get_device_ptr)
         .def("set_device_ptr", &Model::set_device_ptr, py::arg("device_ptr_"))
@@ -675,10 +760,9 @@ PYBIND11_MODULE(epiclib, m) {
         .def("get_random_number_generator_seed", &Model::get_random_number_generator_seed)
         .def("set_device_parameter_string", &Model::set_device_parameter_string, py::arg("str_"))
         .def("get_device_parameter_string", &Model::get_device_parameter_string)
-        .def("interconnect_device_and_human", &Model::interconnect_device_and_human)
-        ;
+        .def("interconnect_device_and_human", &Model::interconnect_device_and_human);
 
-	py::enum_<Simulation_state_e>(m, "CoordinatorState")
+    py::enum_<Simulation_state_e>(m, "CoordinatorState")
         .value("UNREADY", UNREADY)
         .value("INITIALIZED", INITIALIZED)
         .value("STARTED", STARTED)
@@ -686,20 +770,20 @@ PYBIND11_MODULE(epiclib, m) {
         .value("TIMED_OUT", TIMED_OUT)
         .value("PAUSED", PAUSED)
         .value("FINISHED", FINISHED)
-        .export_values()  // optional: allows epiclib.RUNNING, etc.
-		;
+        .export_values() // optional: allows epiclib.RUNNING, etc.
+        ;
 
     // NOTE: Can't copy (e.g. my_instance = Coordinator.get_instance())
     //       For now, using Coordinator directly, but if that don't work, may need to
     //       create an object above that serves as an interface and expose that instead.
     //       or this: https://stackoverflow.com/questions/41814652/how-to-wrap-a-singleton-class-using-pybind11
     py::class_<Coordinator, std::unique_ptr<Coordinator>>(m, "Coordinator")
-		.def_property_readonly("state", &Coordinator::get_state)
+        .def_property_readonly("state", &Coordinator::get_state)
         .def_static("get_instance", &Coordinator::get_instance, py::return_value_policy::reference)
         .def_static("get_time", &Coordinator::get_time)
         .def("initialize", &Coordinator::initialize)
-    	.def("run_until_done", &Coordinator::run_until_done, py::call_guard<py::gil_scoped_release>())
-    	.def("run_for", &Coordinator::run_for, py::arg("run_duration"), py::call_guard<py::gil_scoped_release>())
+        .def("run_until_done", &Coordinator::run_until_done, py::call_guard<py::gil_scoped_release>())
+        .def("run_for", &Coordinator::run_for, py::arg("run_duration"), py::call_guard<py::gil_scoped_release>())
         .def("pause", &Coordinator::pause)
         .def("stop", &Coordinator::stop)
         .def("shutdown_simulation", &Coordinator::shutdown_simulation)
@@ -712,79 +796,85 @@ PYBIND11_MODULE(epiclib, m) {
         .def("add_processor", &Coordinator::add_processor)
         .def("remove_processor", &Coordinator::remove_processor)
         .def("schedule_event", &Coordinator::schedule_event, py::arg("p"))
-        .def("call_with_event", &Coordinator::call_with_event, py::arg("msg"))
-        ;
+        .def("call_with_event", &Coordinator::call_with_event, py::arg("msg"));
 
     py::module_ gu = m.def_submodule("geometric_utilities");
     gu.def("to_radians", &Geometry_Utilities::to_radians, py::arg("theta_d"));
-    gu.def("degrees_subtended", &Geometry_Utilities::degrees_subtended, py::arg("size_measure"), py::arg("distance_measure"));
-    gu.def("degrees_subtended_per_unit", &Geometry_Utilities::degrees_subtended_per_unit, py::arg("units_per_measure"), py::arg("distance_measure"));
-    gu.def("units_per_degree_subtended", &Geometry_Utilities::units_per_degree_subtended, py::arg("units_per_measure"), py::arg("distance_measure"));
-    gu.def("is_point_inside_rectangle", &Geometry_Utilities::is_point_inside_rectangle, py::arg("p"), py::arg("rect_loc"), py::arg("rect_size"));
-    gu.def("clip_line_to_rectangle", &Geometry_Utilities::clip_line_to_rectangle, py::arg("line"), py::arg("rect_loc"), py::arg("rect_size"));
-    gu.def("compute_center_intersecting_line", &Geometry_Utilities::compute_center_intersecting_line, py::arg("start_to_center"), py::arg("rect_size"), py::arg("clipped_line"));
-    gu.def("closest_distance", &Geometry_Utilities::closest_distance, py::arg("p"), py::arg("rect_center"), py::arg("rect_size"));
+    gu.def("degrees_subtended", &Geometry_Utilities::degrees_subtended, py::arg("size_measure"),
+           py::arg("distance_measure"));
+    gu.def("degrees_subtended_per_unit", &Geometry_Utilities::degrees_subtended_per_unit, py::arg("units_per_measure"),
+           py::arg("distance_measure"));
+    gu.def("units_per_degree_subtended", &Geometry_Utilities::units_per_degree_subtended, py::arg("units_per_measure"),
+           py::arg("distance_measure"));
+    gu.def("is_point_inside_rectangle", &Geometry_Utilities::is_point_inside_rectangle, py::arg("p"),
+           py::arg("rect_loc"), py::arg("rect_size"));
+    gu.def("clip_line_to_rectangle", &Geometry_Utilities::clip_line_to_rectangle, py::arg("line"), py::arg("rect_loc"),
+           py::arg("rect_size"));
+    gu.def("compute_center_intersecting_line", &Geometry_Utilities::compute_center_intersecting_line,
+           py::arg("start_to_center"), py::arg("rect_size"), py::arg("clipped_line"));
+    gu.def("closest_distance", &Geometry_Utilities::closest_distance, py::arg("p"), py::arg("rect_center"),
+           py::arg("rect_size"));
     gu.def("cartesian_distance", &Geometry_Utilities::cartesian_distance, py::arg("p1"), py::arg("p2"));
 
     py::class_<Point>(gu, "Point")
-        .def(py::init<double, double>(), py::arg("in_x")=0.0, py::arg("in_y")=0.0)
-        .def_property("x",&Point::get_x, &Point::set_x)
-        .def_property("y",&Point::get_y, &Point::set_y)
+        .def(py::init<double, double>(), py::arg("in_x") = 0.0, py::arg("in_y") = 0.0)
+        .def_property("x", &Point::get_x, &Point::set_x)
+        .def_property("y", &Point::get_y, &Point::set_y)
 
-        .def("__add__", [](const Point& p, const Cartesian_vector& cv){return p + cv;})
-        .def("__add__", [](const Point& p, const Polar_vector& pv){return p + pv;})
-        .def("__sub__", [](const Point& p1, const Point& p2){return p1 - p2;})
+        .def("__add__", [](const Point& p, const Cartesian_vector& cv) { return p + cv; })
+        .def("__add__", [](const Point& p, const Polar_vector& pv) { return p + pv; })
+        .def("__sub__", [](const Point& p1, const Point& p2) { return p1 - p2; })
 
         .def("__repr__", [](const Point& pt) {
-              ostringstream os;
-              os << "Point(" << pt.x << ", " << pt.y << ")";
-              return os.str();
+            ostringstream os;
+            os << "Point(" << pt.x << ", " << pt.y << ")";
+            return os.str();
         });
 
     py::class_<Geometry_Utilities::Size>(gu, "Size")
-        .def(py::init<double, double>(), py::arg("in_h")=0.0, py::arg("in_v")=0.0)
+        .def(py::init<double, double>(), py::arg("in_h") = 0.0, py::arg("in_v") = 0.0)
         .def_readwrite("h", &Geometry_Utilities::Size::h)
         .def_readwrite("v", &Geometry_Utilities::Size::v)
         .def("__repr__", [](const Geometry_Utilities::Size& sz) {
-              std::ostringstream os;
-              os << "Size(" << sz.h << ", " << sz.v << ")";
-              return os.str();
+            std::ostringstream os;
+            os << "Size(" << sz.h << ", " << sz.v << ")";
+            return os.str();
         });
 
     py::class_<Geometry_Utilities::Cartesian_vector>(gu, "Cartesian_vector")
-        .def(py::init<double, double>(), py::arg("delta_x")=0.0, py::arg("delta_y")=0.0)
+        .def(py::init<double, double>(), py::arg("delta_x") = 0.0, py::arg("delta_y") = 0.0)
         .def(py::init<Point, Point>(), py::arg("p1"), py::arg("p2"))
         .def(py::init<Geometry_Utilities::Polar_vector>(), py::arg("pv"))
         .def_readwrite("delta_x", &Geometry_Utilities::Cartesian_vector::delta_x)
         .def_readwrite("delta_y", &Geometry_Utilities::Cartesian_vector::delta_y)
 
-        .def("__add__", [](const Cartesian_vector& cv, const Point p){return cv + p;})
-        .def("__add__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2){return cv1 + cv2;})
-        .def("__sub__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2){return cv1 - cv2;})
-        .def("__div__", [](const Cartesian_vector& cv, double d){return cv / d;})
-        .def("__mul__", [](const Cartesian_vector& cv, double d){return cv * d;})
+        .def("__add__", [](const Cartesian_vector& cv, const Point p) { return cv + p; })
+        .def("__add__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2) { return cv1 + cv2; })
+        .def("__sub__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2) { return cv1 - cv2; })
+        .def("__div__", [](const Cartesian_vector& cv, double d) { return cv / d; })
+        .def("__mul__", [](const Cartesian_vector& cv, double d) { return cv * d; })
 
         .def("__repr__", [](const Geometry_Utilities::Cartesian_vector& cv) {
-              std::ostringstream os;
-              os << "CartesianVector(" << cv.delta_x << ", " << cv.delta_y << ")";
-              return os.str();
+            std::ostringstream os;
+            os << "CartesianVector(" << cv.delta_x << ", " << cv.delta_y << ")";
+            return os.str();
         });
-        
+
     py::class_<Geometry_Utilities::Polar_vector>(gu, "Polar_vector")
-        .def(py::init<double, double>(), py::arg("in_r")=0.0, py::arg("in_theta")=0.0)
+        .def(py::init<double, double>(), py::arg("in_r") = 0.0, py::arg("in_theta") = 0.0)
         .def(py::init<Point, Point>(), py::arg("p1"), py::arg("p2"))
         .def(py::init<Geometry_Utilities::Cartesian_vector>(), py::arg("cv"))
         .def_readwrite("r", &Geometry_Utilities::Polar_vector::r)
         .def_readwrite("theta", &Geometry_Utilities::Polar_vector::theta)
 
-        .def("__add__", [](const Polar_vector& pv, const Point p){return pv + p;})
-        .def("__div__", [](const Polar_vector& pv, double d){return pv / d;})
-        .def("__mul__", [](const Polar_vector& pv, double d){return pv * d;})
+        .def("__add__", [](const Polar_vector& pv, const Point p) { return pv + p; })
+        .def("__div__", [](const Polar_vector& pv, double d) { return pv / d; })
+        .def("__mul__", [](const Polar_vector& pv, double d) { return pv * d; })
 
         .def("__repr__", [](const Geometry_Utilities::Polar_vector& pv) {
-              std::ostringstream os;
-              os << "PolarVector(" << pv.r << ", " << pv.theta << ")";
-              return os.str();
+            std::ostringstream os;
+            os << "PolarVector(" << pv.r << ", " << pv.theta << ")";
+            return os.str();
         });
 
     py::class_<Geometry_Utilities::Line_segment>(gu, "Line_segment")
@@ -803,8 +893,10 @@ PYBIND11_MODULE(epiclib, m) {
         .def("is_horizontal", &Geometry_Utilities::Line_segment::is_horizontal)
         .def("is_vertical", &Geometry_Utilities::Line_segment::is_vertical)
         .def("is_on_infinite_line", &Geometry_Utilities::Line_segment::is_on_infinite_line, py::arg("p"))
-        .def("closest_point_on_infinite_line", &Geometry_Utilities::Line_segment::closest_point_on_infinite_line, py::arg("p"))
-        .def("distance_from_infinite_line", &Geometry_Utilities::Line_segment::distance_from_infinite_line, py::arg("p"))
+        .def("closest_point_on_infinite_line", &Geometry_Utilities::Line_segment::closest_point_on_infinite_line,
+             py::arg("p"))
+        .def("distance_from_infinite_line", &Geometry_Utilities::Line_segment::distance_from_infinite_line,
+             py::arg("p"))
         .def("parameter", &Geometry_Utilities::Line_segment::parameter, py::arg("p"))
         .def("parameter_given_x", &Geometry_Utilities::Line_segment::parameter_given_x, py::arg("x"))
         .def("x_given_parameter", &Geometry_Utilities::Line_segment::x_given_parameter, py::arg("t"))
@@ -814,9 +906,9 @@ PYBIND11_MODULE(epiclib, m) {
         .def("closest_point_on_segment", &Geometry_Utilities::Line_segment::closest_point_on_segment, py::arg("p"))
         .def("distance_from_segment", &Geometry_Utilities::Line_segment::distance_from_segment, py::arg("p"))
         .def("__repr__", [](const Geometry_Utilities::Line_segment& lseg) {
-              std::ostringstream os;
-              os << "LineSegment(" << lseg.get_p1() << ", " << lseg.get_p2() << ")";
-              return os.str();
+            std::ostringstream os;
+            os << "LineSegment(" << lseg.get_p1() << ", " << lseg.get_p2() << ")";
+            return os.str();
         });
 
     py::class_<Geometry_Utilities::Polygon>(gu, "Polygon")
@@ -829,88 +921,98 @@ PYBIND11_MODULE(epiclib, m) {
         .def("distance_inside", &Geometry_Utilities::Polygon::distance_inside, py::arg("p"))
         .def("get_vertices", &Geometry_Utilities::Polygon::get_vertices)
         .def("__repr__", [](const Geometry_Utilities::Polygon& pg) {
-              std::ostringstream os;
-              os << "Polygon(";
-              for (Point p: pg.get_vertices())
-                  os << "Point(" << p.x << ", " << p.y << ")" << ", ";
-              os << ")";
-              return os.str();
-        })
-        ;
+            std::ostringstream os;
+            os << "Polygon(";
+            for (Point p : pg.get_vertices())
+                os << "Point(" << p.x << ", " << p.y << ")" << ", ";
+            os << ")";
+            return os.str();
+        });
 
     // Expose View_base and the trampoline so Python can subclass it if needed
     py::class_<View_base, PyView_base>(m, "View_base")
         .def(py::init())
         .def("clear", &View_base::clear)
         .def("notify_eye_movement", &View_base::notify_eye_movement, py::arg("GU::Point"))
-        .def("notify_object_appear", &View_base::notify_object_appear, py::arg("Symbol&"), py::arg("GU::Point"), py::arg("GU::Size"))
+        .def("notify_object_appear", &View_base::notify_object_appear, py::arg("Symbol&"), py::arg("GU::Point"),
+             py::arg("GU::Size"))
         .def("notify_object_disappear", &View_base::notify_object_disappear, py::arg("Symbol&"))
         .def("notify_object_reappear", &View_base::notify_object_reappear, py::arg("Symbol&"))
         .def("notify_erase_object", &View_base::notify_erase_object, py::arg("Symbol&"))
-        .def("notify_visual_location_changed", &View_base::notify_visual_location_changed, py::arg("Symbol&"), py::arg("GU::Point"))
-        .def("notify_visual_size_changed", &View_base::notify_visual_size_changed, py::arg("Symbol&"), py::arg("GU::Size"))
-        .def("notify_visual_property_changed", &View_base::notify_visual_property_changed, py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
-        .def("notify_auditory_stream_appear", &View_base::notify_auditory_stream_appear, py::arg("Symbol&"), py::arg("double"), py::arg("double"), py::arg("GU::Point"))
+        .def("notify_visual_location_changed", &View_base::notify_visual_location_changed, py::arg("Symbol&"),
+             py::arg("GU::Point"))
+        .def("notify_visual_size_changed", &View_base::notify_visual_size_changed, py::arg("Symbol&"),
+             py::arg("GU::Size"))
+        .def("notify_visual_property_changed", &View_base::notify_visual_property_changed, py::arg("Symbol&"),
+             py::arg("Symbol&"), py::arg("Symbol&"))
+        .def("notify_auditory_stream_appear", &View_base::notify_auditory_stream_appear, py::arg("Symbol&"),
+             py::arg("double"), py::arg("double"), py::arg("GU::Point"))
         .def("notify_auditory_stream_disappear", &View_base::notify_auditory_stream_disappear, py::arg("Symbol&"))
-        .def("notify_auditory_stream_location_changed", &View_base::notify_auditory_stream_location_changed, py::arg("Symbol&"), py::arg("GU::Point"))
-        .def("notify_auditory_stream_pitch_changed", &View_base::notify_auditory_stream_pitch_changed, py::arg("Symbol&"), py::arg("double"))
-        .def("notify_auditory_stream_loudness_changed", &View_base::notify_auditory_stream_loudness_changed, py::arg("Symbol&"), py::arg("double"))
-        .def("notify_auditory_stream_size_changed", &View_base::notify_auditory_stream_size_changed, py::arg("Symbol&"), py::arg("GU::Size"))
-        .def("notify_auditory_stream_property_changed", &View_base::notify_auditory_stream_property_changed, py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
-        .def("notify_auditory_sound_start", &View_base::notify_auditory_sound_start, py::arg("Symbol&"), py::arg("Symbol&"), py::arg("long"), py::arg("GU::Point"), py::arg("Symbol&"), py::arg("double"))
+        .def("notify_auditory_stream_location_changed", &View_base::notify_auditory_stream_location_changed,
+             py::arg("Symbol&"), py::arg("GU::Point"))
+        .def("notify_auditory_stream_pitch_changed", &View_base::notify_auditory_stream_pitch_changed,
+             py::arg("Symbol&"), py::arg("double"))
+        .def("notify_auditory_stream_loudness_changed", &View_base::notify_auditory_stream_loudness_changed,
+             py::arg("Symbol&"), py::arg("double"))
+        .def("notify_auditory_stream_size_changed", &View_base::notify_auditory_stream_size_changed, py::arg("Symbol&"),
+             py::arg("GU::Size"))
+        .def("notify_auditory_stream_property_changed", &View_base::notify_auditory_stream_property_changed,
+             py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
+        .def("notify_auditory_sound_start", &View_base::notify_auditory_sound_start, py::arg("Symbol&"),
+             py::arg("Symbol&"), py::arg("long"), py::arg("GU::Point"), py::arg("Symbol&"), py::arg("double"))
         .def("notify_auditory_speech_start", &View_base::notify_auditory_speech_start, py::arg("Speech_word&"))
         .def("notify_auditory_sound_stop", &View_base::notify_auditory_sound_stop, py::arg("Symbol&"))
         .def("notify_erase_sound", &View_base::notify_erase_sound, py::arg("Symbol&"))
-        .def("notify_auditory_sound_property_changed", &View_base::notify_auditory_sound_property_changed, py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
+        .def("notify_auditory_sound_property_changed", &View_base::notify_auditory_sound_property_changed,
+             py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
         .def("notify_append_text", &View_base::notify_append_text, py::arg("std::string&"))
         .def("notify_time", &View_base::notify_time, py::arg("long"))
         .def("attach_to", &View_base::attach_to, py::arg("processor_ptr"))
         .def("detach_from", &View_base::detach_from, py::arg("processor_ptr"))
-        .def("detach_from_all", &View_base::detach_from_all)
-        ;
+        .def("detach_from_all", &View_base::detach_from_all);
 
-    py::class_<Visual_encoder_base, PyVisual_encoder_base, std::unique_ptr<Visual_encoder_base>>(m, "Visual_encoder_base")
+    py::class_<Visual_encoder_base, PyVisual_encoder_base, std::unique_ptr<Visual_encoder_base>>(m,
+                                                                                                 "Visual_encoder_base")
         .def(py::init<const std::string&>(), py::arg("id"))
         .def("get_name", &Visual_encoder_base::get_name)
         .def("initialize", &Visual_encoder_base::initialize)
         .def("connect", &Visual_encoder_base::connect, py::arg("perceptual_proc_ptr_"))
         .def("get_perceptual_proc_ptr", &Visual_encoder_base::get_perceptual_proc_ptr)
-        .def("set_object_property", &Visual_encoder_base::set_object_property, py::arg("object_name"), py::arg("property_name"), py::arg("property_value"), py::arg("encoding_time"))
-        .def("handle_Delay_event", &Visual_encoder_base::handle_Delay_event, py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("set_object_property", &Visual_encoder_base::set_object_property, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"), py::arg("encoding_time"))
+        .def("handle_Delay_event", &Visual_encoder_base::handle_Delay_event, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"))
 
-        .def("schedule_change_property_event", &Visual_encoder_base::schedule_change_property_event, py::arg("recoding_time"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value") )
+        .def("schedule_change_property_event", &Visual_encoder_base::schedule_change_property_event,
+             py::arg("recoding_time"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
 
-        .def("__repr__",
-            [](const Visual_encoder_base& v) {
-                return "Visual_encoder_base '" + v.get_name() + "'>";
-            }
-        )
-        ;
+        .def("__repr__", [](const Visual_encoder_base& v) { return "Visual_encoder_base '" + v.get_name() + "'>"; });
 
-    py::class_<Auditory_encoder_base, PyAuditory_encoder_base, std::unique_ptr<Auditory_encoder_base>>(m, "Auditory_encoder_base")
+    py::class_<Auditory_encoder_base, PyAuditory_encoder_base, std::unique_ptr<Auditory_encoder_base>>(
+        m, "Auditory_encoder_base")
         .def(py::init<const std::string&>(), py::arg("id"))
         .def("get_name", &Auditory_encoder_base::get_name)
         .def("initialize", &Auditory_encoder_base::initialize)
         .def("get_perceptual_proc_ptr", &Auditory_encoder_base::get_perceptual_proc_ptr)
         .def("connect", &Auditory_encoder_base::connect, py::arg("perceptual_proc_ptr_"))
-        .def("set_object_property", &Auditory_encoder_base::set_object_property, py::arg("object_name"), py::arg("property_name"), py::arg("property_value"), py::arg("encoding_time"))
-        .def("handle_Delay_event", &Auditory_encoder_base::handle_Delay_event, py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("set_object_property", &Auditory_encoder_base::set_object_property, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"), py::arg("encoding_time"))
+        .def("handle_Delay_event", &Auditory_encoder_base::handle_Delay_event, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"))
 
-        .def("schedule_change_property_event", &Auditory_encoder_base::schedule_change_property_event, py::arg("recoding_time"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value") )
+        .def("schedule_change_property_event", &Auditory_encoder_base::schedule_change_property_event,
+             py::arg("recoding_time"), py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
 
 
         .def("__repr__",
-            [](const Auditory_encoder_base& v) {
-                return "<Auditory_encoder_base '" + v.get_name() + "'>";
-            }
-        )
-        ;
+             [](const Auditory_encoder_base& v) { return "<Auditory_encoder_base '" + v.get_name() + "'>"; });
 
     py::module_ nu = m.def_submodule("numeric_utilities");
     nu.doc() = "EPICLib Numeric utilities";
     nu.def("round_to_integer", &round_to_integer, "Return a double rounded to the nearest integer value.");
     nu.def("int_to_string", &int_to_string, "Convert an integer to a string.");
-    nu.def("time_convert", (long (*)(long, long, long)) &time_convert, "Convert hours, minutes, and seconds to milliseconds (note long integer returned).");
+    nu.def("time_convert", (long (*)(long, long, long)) & time_convert,
+           "Convert hours, minutes, and seconds to milliseconds (note long integer returned).");
     nu.def("time_convert", [](long, int&, int&, int&, int&) {
         throw std::runtime_error("There is no pybind interface for this updater version of time_convert.");
     });
@@ -922,43 +1024,66 @@ PYBIND11_MODULE(epiclib, m) {
 
     py::module_ ru = m.def_submodule("random_utilities");
     ru.doc() = "EPICLib module for random number generation";
-    ru.def("set_random_number_generator_seed", &set_random_number_generator_seed, "Set the seed for the random number generator");
+    ru.def("set_random_number_generator_seed", &set_random_number_generator_seed,
+           "Set the seed for the random number generator");
     ru.def("random_int", &random_int, "Generate a random integer in the range [0, range-1]");
     ru.def("biased_coin_flip", &biased_coin_flip, "Flip a biased coin and return true with probability p");
     ru.def("unit_uniform_random_variable", &unit_uniform_random_variable, "Generate a unit uniform random variable");
-    ru.def("uniform_random_variable", &uniform_random_variable, "Generate a uniform random variable with given mean and deviation");
+    ru.def("uniform_random_variable", &uniform_random_variable,
+           "Generate a uniform random variable with given mean and deviation");
     ru.def("unit_normal_random_variable", &unit_normal_random_variable, "Generate a unit normal random variable");
-    ru.def("normal_random_variable", &normal_random_variable, "Generate a normal random variable with given mean and sd");
-    ru.def("log_normal_random_variable", &log_normal_random_variable, "Generate a log-normal random variable with given mean and sd");
-    ru.def("uniform_detection_function", &uniform_detection_function, "Generate a boolean based on a uniform detection function");
-    ru.def("gaussian_detection_function", &gaussian_detection_function, "Generate a boolean based on a Gaussian detection function");
-    ru.def("lapsed_gaussian_detection_function", &lapsed_gaussian_detection_function, "Generate a boolean based on a lapsed Gaussian detection function");
-    ru.def("based_gaussian_detection_function", &based_gaussian_detection_function, "Generate a boolean based on a based Gaussian detection function");
-    ru.def("capped_gaussian_detection_function", &capped_gaussian_detection_function, "Generate a boolean based on a capped Gaussian detection function");
-    ru.def("exponential_detection_function", &exponential_detection_function, "Generate a boolean based on an exponential detection function");
-    ru.def("based_exponential_detection_function", &based_exponential_detection_function, "Generate a boolean based on a based exponential detection function");
-    ru.def("get_bivariate_normal_cdf", &get_bivariate_normal_cdf, "Get the cumulative probability from the bivariate normal distribution for two given z-scores");
+    ru.def("normal_random_variable", &normal_random_variable,
+           "Generate a normal random variable with given mean and sd");
+    ru.def("log_normal_random_variable", &log_normal_random_variable,
+           "Generate a log-normal random variable with given mean and sd");
+    ru.def("uniform_detection_function", &uniform_detection_function,
+           "Generate a boolean based on a uniform detection function");
+    ru.def("gaussian_detection_function", &gaussian_detection_function,
+           "Generate a boolean based on a Gaussian detection function");
+    ru.def("lapsed_gaussian_detection_function", &lapsed_gaussian_detection_function,
+           "Generate a boolean based on a lapsed Gaussian detection function");
+    ru.def("based_gaussian_detection_function", &based_gaussian_detection_function,
+           "Generate a boolean based on a based Gaussian detection function");
+    ru.def("capped_gaussian_detection_function", &capped_gaussian_detection_function,
+           "Generate a boolean based on a capped Gaussian detection function");
+    ru.def("exponential_detection_function", &exponential_detection_function,
+           "Generate a boolean based on an exponential detection function");
+    ru.def("based_exponential_detection_function", &based_exponential_detection_function,
+           "Generate a boolean based on a based exponential detection function");
+    ru.def("get_bivariate_normal_cdf", &get_bivariate_normal_cdf,
+           "Get the cumulative probability from the bivariate normal distribution for two given z-scores");
     py::class_<Discrete_distribution>(ru, "Discrete_distribution")
-        .def(py::init<std::vector<double>>(), "Constructor for Discrete_distribution class, takes in a vector of probabilities")
-        .def("get_random_value", &Discrete_distribution::get_random_value, "Get a random value based on the given probabilities");
+        .def(py::init<std::vector<double>>(),
+             "Constructor for Discrete_distribution class, takes in a vector of probabilities")
+        .def("get_random_value", &Discrete_distribution::get_random_value,
+             "Get a random value based on the given probabilities");
 
     py::module_ su = m.def_submodule("symbol_utilities");
     su.doc() = "EPICLib module for Symbol manipulation";
-    su.def("get_nth_Symbol", (Symbol (*)(const Symbol_list_t&, int)) &get_nth_Symbol, "Return the nth Symbol in the list");
+    su.def("get_nth_Symbol", (Symbol(*)(const Symbol_list_t&, int)) & get_nth_Symbol,
+           "Return the nth Symbol in the list");
     su.def("cstr_to_Symbol_list", &cstr_to_Symbol_list, "Convert a C-string to a Symbol list");
     su.def("int_to_Symbol", &int_to_Symbol, "Convert an integer to a Symbol");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const char *, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a string and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const Symbol&, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a Symbol and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const char *, const char *, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with two strings and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const Symbol&, const Symbol&, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with two Symbols and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const char*, const Symbol&, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a string, a Symbol, and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const Symbol&, const char*, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a Symbol, a string, and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const char *, const char *, const char *, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with three strings and an integer");
-    su.def("concatenate_to_Symbol", (Symbol (*)(const char*, const Symbol&, const char*, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a string, a Symbol, another string, and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const char*, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with a string and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const Symbol&, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with a Symbol and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const char*, const char*, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with two strings and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const Symbol&, const Symbol&, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with two Symbols and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const char*, const Symbol&, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with a string, a Symbol, and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const Symbol&, const char*, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with a Symbol, a string, and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const char*, const char*, const char*, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with three strings and an integer");
+    su.def("concatenate_to_Symbol", (Symbol(*)(const char*, const Symbol&, const char*, long)) & concatenate_to_Symbol,
+           "Concatenate to a Symbol with a string, a Symbol, another string, and an integer");
 
     py::module_ sc = m.def_submodule("syllable_counter");
     sc.doc() = "EPICLib module to count syllables";
-    sc.def("count_total_syllables", (int (*)(const std::string&)) &count_total_syllables);
+    sc.def("count_total_syllables", (int (*)(const std::string&)) & count_total_syllables);
 
     py::module_ ss = m.def_submodule("standard_symbols");
     ss.doc() = "EPICLib module containing standard symbols";
@@ -1044,21 +1169,21 @@ PYBIND11_MODULE(epiclib, m) {
     ss.attr("White_c") = py::cast(&White_c);
     ss.attr("Yellow_c") = py::cast(&Yellow_c);
     ss.attr("Vague_c") = py::cast(&Vague_c);
-    ss.attr("Circle_c") = py::cast(&Circle_c );
-    ss.attr("Empty_Circle_c") = py::cast(&Empty_Circle_c );
-    ss.attr("Filled_Circle_c") = py::cast(&Filled_Circle_c );
-    ss.attr("Top_Semicircle_c") = py::cast(&Top_Semicircle_c );
-    ss.attr("Empty_Top_Semicircle_c") = py::cast(&Empty_Top_Semicircle_c );
-    ss.attr("Filled_Top_Semicircle_c") = py::cast(&Filled_Top_Semicircle_c );
-    ss.attr("Rectangle_c") = py::cast(&Rectangle_c );
-    ss.attr("Empty_Rectangle_c") = py::cast(&Empty_Rectangle_c );
-    ss.attr("Filled_Rectangle_c") = py::cast(&Filled_Rectangle_c );
-    ss.attr("Square_c") = py::cast(&Square_c );
-    ss.attr("Empty_Square_c") = py::cast(&Empty_Square_c );
-    ss.attr("Filled_Square_c") = py::cast(&Filled_Square_c );
-    ss.attr("Button_c") = py::cast(&Button_c );
-    ss.attr("Empty_Button_c") = py::cast(&Empty_Button_c );
-    ss.attr("Filled_Button_c") = py::cast(&Filled_Button_c );
+    ss.attr("Circle_c") = py::cast(&Circle_c);
+    ss.attr("Empty_Circle_c") = py::cast(&Empty_Circle_c);
+    ss.attr("Filled_Circle_c") = py::cast(&Filled_Circle_c);
+    ss.attr("Top_Semicircle_c") = py::cast(&Top_Semicircle_c);
+    ss.attr("Empty_Top_Semicircle_c") = py::cast(&Empty_Top_Semicircle_c);
+    ss.attr("Filled_Top_Semicircle_c") = py::cast(&Filled_Top_Semicircle_c);
+    ss.attr("Rectangle_c") = py::cast(&Rectangle_c);
+    ss.attr("Empty_Rectangle_c") = py::cast(&Empty_Rectangle_c);
+    ss.attr("Filled_Rectangle_c") = py::cast(&Filled_Rectangle_c);
+    ss.attr("Square_c") = py::cast(&Square_c);
+    ss.attr("Empty_Square_c") = py::cast(&Empty_Square_c);
+    ss.attr("Filled_Square_c") = py::cast(&Filled_Square_c);
+    ss.attr("Button_c") = py::cast(&Button_c);
+    ss.attr("Empty_Button_c") = py::cast(&Empty_Button_c);
+    ss.attr("Filled_Button_c") = py::cast(&Filled_Button_c);
     ss.attr("Triangle_c") = py::cast(&Triangle_c);
     ss.attr("Empty_Triangle_c") = py::cast(&Empty_Triangle_c);
     ss.attr("Filled_Triangle_c") = py::cast(&Filled_Triangle_c);

@@ -15,9 +15,10 @@ void Stream_base::reset()
     do_reset();
 }
 
-void Stream_base::update(double pitch, double loudness, double azimuth, const Symbol& last_veridical_stream_, int last_utterance_id_)
+void Stream_base::update(double pitch, double loudness, double azimuth, const Symbol& last_veridical_stream_,
+                         int last_utterance_id_)
 {
-	disappearance_time = 0;
+    disappearance_time = 0;
     last_veridical_stream = last_veridical_stream_;
     last_utterance_id = last_utterance_id_;
     do_update(pitch, loudness, azimuth);

@@ -13,5 +13,4 @@
 Geometry_Utilities::Point apply_auditory_location_error(Geometry_Utilities::Point original_location);
 
 
-
 #endif

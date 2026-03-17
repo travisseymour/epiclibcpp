@@ -14,20 +14,21 @@
 
 using std::vector;
 
-class Matrix {
+class Matrix
+{
 private:
     size_t width;
     size_t height;
-    vector< vector<double> > elements;
+    vector<vector<double>> elements;
     double max;
-    
+
 public:
-    //Constructors
+    // Constructors
     Matrix();
     Matrix(size_t n, double init_val);
     Matrix(size_t x, size_t y, double init_val);
-    
-    //Mutators
+
+    // Mutators
     void resize(size_t x, size_t y, double init_val);
     void set(size_t x, size_t y, double val);
     void set_all(double val);
@@ -39,23 +40,22 @@ public:
     void to_negative_sigmoid(double upper_asymptote);
     void to_yaxis_sigmoid(double upper_asymptote, bool positive);
     void to_multivariable_sigmoid(double upper_asymptote, int quadrant);
-    //void to_rectangle(int x_mean, int y_mean, double sigma);
+    // void to_rectangle(int x_mean, int y_mean, double sigma);
     void normalize();
     void normalize(double sum);
     void convolution(Matrix m);
-    
-    //Accessors
+
+    // Accessors
     unsigned long get_height();
     unsigned long get_width();
     double get_value(int x, int y);
     double sum();
     double get_max();
-    
-    //void clean();
-    
-    std::string to_string();
-    //void swap(Matrix &);
 
+    // void clean();
+
+    std::string to_string();
+    // void swap(Matrix &);
 };
 
 

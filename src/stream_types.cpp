@@ -26,8 +26,8 @@ void Two_point_linear_stream::do_update(double pitch, double loudness, double az
 
 int Two_point_linear_stream::do_get_prediction_n() const
 {
-	Assert(pitches.size() == loudnesses.size());
-	return int(pitches.size());
+    Assert(pitches.size() == loudnesses.size());
+    return int(pitches.size());
 }
 
 // make a linear prediction based on last two data points
@@ -51,7 +51,7 @@ double Two_point_linear_stream::do_get_predicted_azimuth() const
 double Two_point_linear_stream::predict_next_value(const std::vector<double>& v) const
 {
     Assert(v.size() > 0);
-    if(v.size() == 1)
+    if (v.size() == 1)
         return v[0];
     return (v[1] - v[0]) + v[1];
 }
@@ -59,10 +59,10 @@ double Two_point_linear_stream::predict_next_value(const std::vector<double>& v)
 // add the new value; if already have two, discard the oldest one
 void Two_point_linear_stream::update_with_value(std::vector<double>& v, double x)
 {
-    if(v.size() == 2) {
-        v[0] = v[1];  // discard oldest value
+    if (v.size() == 2) {
+        v[0] = v[1]; // discard oldest value
         v[1] = x;
-        }
+    }
     else
         v.push_back(x);
 }
@@ -81,13 +81,13 @@ void Averaging_stream::do_update(double pitch, double loudness, double azimuth)
 {
     n++;
     pitch_sum += pitch;
-    loudness_sum +=loudness;
-    azimuth_sum +=azimuth;
+    loudness_sum += loudness;
+    azimuth_sum += azimuth;
 }
 
-int Averaging_stream::do_get_prediction_n() const 
+int Averaging_stream::do_get_prediction_n() const
 {
-	return n;
+    return n;
 }
 
 // predicted value is current average

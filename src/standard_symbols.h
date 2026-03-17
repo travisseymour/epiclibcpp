@@ -15,13 +15,13 @@
 // A "standard" visible object created or maintained by the device should use
 // one of these as the identity name of the object, and the architecture assumes
 // the existence of these objects. The actual name is the symbol name without "_name_c"
-extern const Symbol Cursor_name_c;			// the cursor visual object
-extern const Symbol Tracking_cursor_name_c;	// the tracking cursor visual object
-extern const Symbol Mouse_name_c;			// the mouse device itself
-extern const Symbol Mouse_Left_Button_c;	// use for single mouse button
+extern const Symbol Cursor_name_c;          // the cursor visual object
+extern const Symbol Tracking_cursor_name_c; // the tracking cursor visual object
+extern const Symbol Mouse_name_c;           // the mouse device itself
+extern const Symbol Mouse_Left_Button_c;    // use for single mouse button
 extern const Symbol Mouse_Middle_Button_c;
 extern const Symbol Mouse_Right_Button_c;
-extern const Symbol Keyboard_name_c;		// the keyboard device as a whole
+extern const Symbol Keyboard_name_c; // the keyboard device as a whole
 
 // used as a property name - but might be reserved
 extern const Symbol Status_c;
@@ -46,7 +46,7 @@ extern const Symbol Color_Vague_c;
 extern const Symbol BgColor_c;
 extern const Symbol FgColor_c;
 extern const Symbol Shape_c;
-extern const Symbol Size_c;	// for actual size
+extern const Symbol Size_c; // for actual size
 extern const Symbol Encoded_size_c;
 extern const Symbol Label_c;
 extern const Symbol Text_c;
@@ -57,7 +57,7 @@ extern const Symbol Location_c;
 extern const Symbol Orientation_c;
 extern const Symbol Distance_c;
 extern const Symbol Depth_c;
-extern const Symbol Leader_c;	// for radar display leader lines
+extern const Symbol Leader_c; // for radar display leader lines
 
 // values for orther standard visual properties
 extern const Symbol Horizontal_c;
@@ -112,21 +112,21 @@ extern const Symbol Yellow_c;
 extern const Symbol Vague_c;
 
 // standard Shape property values
-extern const Symbol Circle_c ;
-extern const Symbol Empty_Circle_c ;
-extern const Symbol Filled_Circle_c ;
-extern const Symbol Top_Semicircle_c ;
-extern const Symbol Empty_Top_Semicircle_c ;
-extern const Symbol Filled_Top_Semicircle_c ;
-extern const Symbol Rectangle_c ;
-extern const Symbol Empty_Rectangle_c ;
-extern const Symbol Filled_Rectangle_c ;
-extern const Symbol Square_c ;
-extern const Symbol Empty_Square_c ;
-extern const Symbol Filled_Square_c ;
-extern const Symbol Button_c ;
-extern const Symbol Empty_Button_c ;
-extern const Symbol Filled_Button_c ;
+extern const Symbol Circle_c;
+extern const Symbol Empty_Circle_c;
+extern const Symbol Filled_Circle_c;
+extern const Symbol Top_Semicircle_c;
+extern const Symbol Empty_Top_Semicircle_c;
+extern const Symbol Filled_Top_Semicircle_c;
+extern const Symbol Rectangle_c;
+extern const Symbol Empty_Rectangle_c;
+extern const Symbol Filled_Rectangle_c;
+extern const Symbol Square_c;
+extern const Symbol Empty_Square_c;
+extern const Symbol Filled_Square_c;
+extern const Symbol Button_c;
+extern const Symbol Empty_Button_c;
+extern const Symbol Filled_Button_c;
 extern const Symbol Triangle_c;
 extern const Symbol Empty_Triangle_c;
 extern const Symbol Filled_Triangle_c;
@@ -224,7 +224,7 @@ extern const Symbol Timbre_c;
 extern const Symbol Present_c;
 extern const Symbol Next_c;
 extern const Symbol Time_stamp_c;
-extern const Symbol External_c;	// use when distinct localized stream objects unnecessary
+extern const Symbol External_c; // use when distinct localized stream objects unnecessary
 extern const Symbol Default_physical_stream_c;
 extern const Symbol Default_psychological_stream_c;
 extern const Symbol Speech_c;
@@ -240,10 +240,10 @@ extern const Symbol Signal_c;
 extern const Symbol Start_c;
 extern const Symbol Stop_c;
 extern const Symbol Halt_c;
-extern const Symbol End_c;				// For temporal
-extern const Symbol Increment_c;		// For temporal
+extern const Symbol End_c;       // For temporal
+extern const Symbol Increment_c; // For temporal
 
-//Character object properties (for flanker task)
+// Character object properties (for flanker task)
 extern const Symbol Char_Line_Vert_c;
 extern const Symbol Char_Line_Horiz_c;
 extern const Symbol Char_Line_Diag_c;
@@ -253,12 +253,12 @@ extern const Symbol Char_Point_Right_c;
 extern const Symbol Char_Curve_Open_c;
 extern const Symbol Char_Curve_Closed_c;
 
-//MWalton: Attention properties
+// MWalton: Attention properties
 extern const Symbol Focus_c;
 extern const Symbol Set_attn_c;
 
-//MWalton: Attentional saliency properties
-//extern const Symbol Gaussian_c;
+// MWalton: Attentional saliency properties
+// extern const Symbol Gaussian_c;
 extern const Symbol Attention_c;
 extern const Symbol Cue_c;
 extern const Symbol Region_c;

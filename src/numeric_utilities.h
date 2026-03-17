@@ -24,5 +24,4 @@ double logb2(double x);
 double pitch_to_semitones(double pitch);
 
 
-
 #endif

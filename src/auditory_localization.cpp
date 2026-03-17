@@ -31,33 +31,32 @@ static double compute_sd(double);
 
 GU::Point apply_auditory_location_error(GU::Point original_location)
 {
-/*
-    return original_location;
-*/
+    /*
+        return original_location;
+    */
     // location error in azimuth only
     double x = original_location.x;
-	if (x <= 180.) { // for right side
-		x = modify_azimuth(x);
-		}
-	else {  // for left side
-		x = 360. - x; // transform to same scale as right side		if(debug_messages)
-		x = modify_azimuth(x);
+    if (x <= 180.) { // for right side
+        x = modify_azimuth(x);
+    }
+    else {            // for left side
+        x = 360. - x; // transform to same scale as right side		if(debug_messages)
+        x = modify_azimuth(x);
         x = 360. - x; // transform back
-		}
+    }
 
-	return GU::Point(x, original_location.y);
-
+    return GU::Point(x, original_location.y);
 }
 
 // modify the supplied azimuth with noise, biased, and flipped in some order
 double modify_azimuth(double original_azimuth)
 {
-	double sd = compute_sd(original_azimuth);
-	double bias = compute_bias(original_azimuth);
-	double biased_azimuth = original_azimuth + bias;
-	double x = normal_random_variable(biased_azimuth, sd);
-	x = compute_reversal(x);
-	return x;
+    double sd = compute_sd(original_azimuth);
+    double bias = compute_bias(original_azimuth);
+    double biased_azimuth = original_azimuth + bias;
+    double x = normal_random_variable(biased_azimuth, sd);
+    x = compute_reversal(x);
+    return x;
 }
 
 /*
@@ -68,36 +67,36 @@ Azimuth			slope		intercept
 0 <= x <= 45	0.021233333	1.075
 45 < x <= 60	0.053466667	-0.3755
 60 < x <= 90	0.349833333	-18.1575
-		
+
 SD=pMMA/1.36 for sd corresponding to 25%, 75% ??? check
 */
 
-double compute_sd (double x)
+double compute_sd(double x)
 {
-	double pMMA;
-	if(0. <= x && x <= 45.)
-		pMMA = 0.021233333 * x + 1.075;
-	else if(45. < x && x <= 60.)
-		pMMA = 0.053466667 * x - 0.3755;
-	else if(60. < x && x <= 90.)
-		pMMA = 0.349833333 * x - 18.1575;
-	else
-		pMMA = 0.1 * x - 5;  // some made-up values
+    double pMMA;
+    if (0. <= x && x <= 45.)
+        pMMA = 0.021233333 * x + 1.075;
+    else if (45. < x && x <= 60.)
+        pMMA = 0.053466667 * x - 0.3755;
+    else if (60. < x && x <= 90.)
+        pMMA = 0.349833333 * x - 18.1575;
+    else
+        pMMA = 0.1 * x - 5; // some made-up values
 
-	return pMMA / 1.36;	// approximate sd
+    return pMMA / 1.36; // approximate sd
 }
 
 // no bias at this time
 // return the biased_azimuth computed as a function of the azimuth
 double compute_bias(double x)
 {
-	return 0.;
+    return 0.;
 }
 
 // no reversal at this time
 double compute_reversal(double original_azimuth)
 {
-	return original_azimuth;
+    return original_azimuth;
 }
 
 /*
@@ -106,14 +105,14 @@ double compute_sd (double x)
 {
 // based on Middlebrooks
 // =-0.00000007337*A2^4+0.00001787*A2^3-0.001513*A2^2+0.1231*A2+2.29
-	const double a4 = -0.0000000733;
-	const double a3 = +0.00001787;
-	const double a2 = -0.001513;
-	const double a1 = +0.1231;
-	const double a0 = +2.29;
-	
-	double sd = a4 * (x * x * x * x) + a3 * (x * x *x) + a2 * (x * x) + a1 * (x) + a0;
-	return sd;
+    const double a4 = -0.0000000733;
+    const double a3 = +0.00001787;
+    const double a2 = -0.001513;
+    const double a1 = +0.1231;
+    const double a0 = +2.29;
+
+    double sd = a4 * (x * x * x * x) + a3 * (x * x *x) + a2 * (x * x) + a1 * (x) + a0;
+    return sd;
 }
 
 // return the biased_azimuth computed as a function of the azimuth
@@ -121,14 +120,14 @@ double compute_bias(double x)
 {
 // based on combined Oldfield & Middlebrooks data
 // =0.0000002801*A17^4-0.00007509*A17^3+0.004356*A17^2+0.006655*A17+0.1454
-	const double a4 = 0.0000002801;
-	const double a3 = -0.00007509;
-	const double a2 = +0.004356;
-	const double a1 = +0.006655;
-	const double a0 = +0.1454;
-	
-	double biased = a4 * (x * x * x * x) + a3 * (x * x *x) + a2 * (x * x) + a1 * (x) + a0;
-	return biased;
+    const double a4 = 0.0000002801;
+    const double a3 = -0.00007509;
+    const double a2 = +0.004356;
+    const double a1 = +0.006655;
+    const double a0 = +0.1454;
+
+    double biased = a4 * (x * x * x * x) + a3 * (x * x *x) + a2 * (x * x) + a1 * (x) + a0;
+    return biased;
 }
 
 
@@ -137,22 +136,22 @@ double compute_bias(double x)
 // Return either the original value or the flipped value.
 double compute_reversal(double original_azimuth)
 {
-	const double m = 90.;
-	const double s = 57.9;
-	const double a = 62.54;
-	const double b = 0.01318;
-	const double c = 0.278;
-	
-	// compute value to compare to uniform random variable
-	double az = (original_azimuth - m) / s;
-	double z = (az - b) / c;
-	double p = a * exp(-(z*z));
-	
-	double x = unit_uniform_random_variable();
-	if(x <= p)
-		return 180. - original_azimuth;// reverse
-	else
-		return original_azimuth;
+    const double m = 90.;
+    const double s = 57.9;
+    const double a = 62.54;
+    const double b = 0.01318;
+    const double c = 0.278;
+
+    // compute value to compare to uniform random variable
+    double az = (original_azimuth - m) / s;
+    double z = (az - b) / c;
+    double p = a * exp(-(z*z));
+
+    double x = unit_uniform_random_variable();
+    if(x <= p)
+        return 180. - original_azimuth;// reverse
+    else
+        return original_azimuth;
 }
 
 */

@@ -1,7 +1,7 @@
 #ifndef EYE_RETINAL_FUNCTIONS_H
 #define EYE_RETINAL_FUNCTIONS_H
 
-//#include "Smart_Pointer.h"
+// #include "Smart_Pointer.h"
 #include "visual_physical_store.h"
 #include "visual_constants.h"
 #include "symbol.h"
@@ -19,24 +19,31 @@ Base class for property availability objects.
 The available function returns true if the property is available.
 The delay function returns a time; it may be called even if the property is not available.
 */
-class Availability {
+class Availability
+{
 public:
-	Availability(const Visual_physical_store& physical_store_, const Symbol& property_name_) :
-		physical_store(physical_store_), property_name(property_name_)
-		{}
-	const Symbol& get_property_name() const 
-		{return property_name;}
-		
-	virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr) = 0;
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr) = 0;
-	virtual std::string get_description() const = 0;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store, const Parameter_specification& param_spec);
+    Availability(const Visual_physical_store& physical_store_, const Symbol& property_name_)
+        : physical_store(physical_store_)
+        , property_name(property_name_)
+    {
+    }
+    const Symbol& get_property_name() const
+    {
+        return property_name;
+    }
+
+    virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr) = 0;
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr) = 0;
+    virtual std::string get_description() const = 0;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store,
+                                                const Parameter_specification& param_spec);
 
 protected:
-	const Visual_physical_store& physical_store;
+    const Visual_physical_store& physical_store;
+
 private:
-	Symbol property_name;
-	Availability();
+    Symbol property_name;
+    Availability();
 };
 
 /* Zone availability means the property is all-or-none available within a certain
@@ -44,68 +51,87 @@ radius; if it is within the "standard" fovea, it is always available, outside
 the "standard" periphery, it is not. Otherwise, it is available if it is within
 a property-specific "parafoveal" distance, and has a property-specific delay.
 */
-class Zone_availability : public Availability {
+class Zone_availability : public Availability
+{
 public:
-	Zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double zone_radius_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), zone_radius(zone_radius_)
-		{}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                      double zone_radius_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , zone_radius(zone_radius_)
+    {
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double zone_radius;
+    long transduction_delay;
+    double zone_radius;
 };
 
 /* "Standard" default availabilities based on the LISP EPIC defaults
 These are zone availabilities that use the "standard" values for fovea, parafovea, and periphery.
 */
 // property is available only in the "standard fovea"
-class Fovea_std_zone_availability : public Zone_availability {
+class Fovea_std_zone_availability : public Zone_availability
+{
 public:
-	Fovea_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_ = standard_delay) :
-	Zone_availability(physical_store_, property_name_, delay_, standard_fovea_radius)
-	{}
+    Fovea_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                long delay_ = standard_delay)
+        : Zone_availability(physical_store_, property_name_, delay_, standard_fovea_radius)
+    {
+    }
 };
 
 // property is available also in the "standard parafovea"
-class Parafovea_std_zone_availability : public Zone_availability {
+class Parafovea_std_zone_availability : public Zone_availability
+{
 public:
-	Parafovea_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_ = standard_delay):
-	Zone_availability(physical_store_, property_name_, delay_, standard_parafovea_radius)
-	{}
+    Parafovea_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                    long delay_ = standard_delay)
+        : Zone_availability(physical_store_, property_name_, delay_, standard_parafovea_radius)
+    {
+    }
 };
 
 // property is available everywhere within the periphery
-class Periphery_std_zone_availability : public Zone_availability {
+class Periphery_std_zone_availability : public Zone_availability
+{
 public:
-	Periphery_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_ = standard_delay) :
-	Zone_availability(physical_store_, property_name_, delay_, standard_peripheral_radius)
-	{}
+    Periphery_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                    long delay_ = standard_delay)
+        : Zone_availability(physical_store_, property_name_, delay_, standard_peripheral_radius)
+    {
+    }
 };
 
 // for all visual spatial relations
-class Relation_std_zone_availability : public Periphery_std_zone_availability {
+class Relation_std_zone_availability : public Periphery_std_zone_availability
+{
 public:
-	Relation_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_);
+    Relation_std_zone_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_);
 };
 
-class Color_std_zone_availability : public Parafovea_std_zone_availability {
+class Color_std_zone_availability : public Parafovea_std_zone_availability
+{
 public:
-	Color_std_zone_availability(const Visual_physical_store& physical_store_);
+    Color_std_zone_availability(const Visual_physical_store& physical_store_);
 };
 
-class Shape_std_zone_availability : public Parafovea_std_zone_availability {
+class Shape_std_zone_availability : public Parafovea_std_zone_availability
+{
 public:
-	Shape_std_zone_availability(const Visual_physical_store& physical_store_);
+    Shape_std_zone_availability(const Visual_physical_store& physical_store_);
 };
 
-class Text_std_zone_availability : public Fovea_std_zone_availability {
+class Text_std_zone_availability : public Fovea_std_zone_availability
+{
 public:
-	Text_std_zone_availability(const Visual_physical_store& physical_store_);
+    Text_std_zone_availability(const Visual_physical_store& physical_store_);
 };
 
 // End of "standard" zone availabilities
@@ -115,75 +141,96 @@ public:
 probability regardless of where it is outside the fovea.
 if it is within the "standard" fovea, it is always available.
 */
-class Flat_availability : public Availability {
+class Flat_availability : public Availability
+{
 public:
-	Flat_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double probability_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), probability(probability_)
-		{}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Flat_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                      double probability_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , probability(probability_)
+    {
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double probability;
+    long transduction_delay;
+    double probability;
 };
 
 
 /* Selector availability means the property is all-or-none available with a certain
-probability if it has a certain value, and not otherwise, except 
-if it is within the "standard" fovea, it is always available. 
+probability if it has a certain value, and not otherwise, except
+if it is within the "standard" fovea, it is always available.
 */
-class Selector_availability : public Availability {
+class Selector_availability : public Availability
+{
 public:
-	Selector_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, Symbol selected_value_, double probability_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), selected_value(selected_value_), probability(probability_)
-		{}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Selector_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                          Symbol selected_value_, double probability_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , selected_value(selected_value_)
+        , probability(probability_)
+    {
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	Symbol selected_value;
-	double probability;
+    long transduction_delay;
+    Symbol selected_value;
+    double probability;
 };
 
 /* Custom availability provides an arbitrary function for determining availability.
 This is intended as an aid to data fitting.
 */
-class Custom_availability : public Availability {
+class Custom_availability : public Availability
+{
 public:
-	Custom_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_)
-		{}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Custom_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+    {
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
+    long transduction_delay;
 };
 
-class Custom_availability2 : public Availability {
+class Custom_availability2 : public Availability
+{
 public:
-	Custom_availability2(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_)
-		{}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Custom_availability2(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+    {
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
+    long transduction_delay;
 };
 
 
@@ -194,22 +241,29 @@ The function specifies the minimum size for an object within the fovea,
 and the slope for the function. All units are in degrees VA.
 The delay is a flat value for the property.
 */
-class Linear_availability : public Availability {
+class Linear_availability : public Availability
+{
 public:
-	Linear_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double min_size_, double slope_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), 
-		min_size(min_size_),slope(slope_)
-		{Assert(min_size > 0. && slope > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Linear_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                        double min_size_, double slope_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , min_size(min_size_)
+        , slope(slope_)
+    {
+        Assert(min_size > 0. && slope > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double min_size;
-	double slope;
+    long transduction_delay;
+    double min_size;
+    double slope;
 };
 
 /*
@@ -220,23 +274,31 @@ The function specifies the minimum size for an object.
 All units are in degrees VA.
 The delay is a flat value for the property.
 */
-class Fixed_quadratic_availability : public Availability {
+class Fixed_quadratic_availability : public Availability
+{
 public:
-	Fixed_quadratic_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double intercept_, double x_coeff_, double x2_coeff_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), 
-		intercept(intercept_),x_coeff(x_coeff_), x2_coeff(x2_coeff_)
-		{Assert(intercept_ > 0. && x_coeff > 0. && x2_coeff > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Fixed_quadratic_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                 long delay_, double intercept_, double x_coeff_, double x2_coeff_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , intercept(intercept_)
+        , x_coeff(x_coeff_)
+        , x2_coeff(x2_coeff_)
+    {
+        Assert(intercept_ > 0. && x_coeff > 0. && x2_coeff > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double intercept;
-	double x_coeff;
-	double x2_coeff;
+    long transduction_delay;
+    double intercept;
+    double x_coeff;
+    double x2_coeff;
 };
 
 /*
@@ -248,25 +310,35 @@ If ecc < zone, then always available.
 All units are in degrees VA.
 The delay is a flat value for the property.
 */
-class Quadratic_availability : public Availability {
+class Quadratic_availability : public Availability
+{
 public:
-	Quadratic_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double zone_, double coefvar_, double intercept_, double x_coeff_, double x2_coeff_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), zone(zone_), coefvar(coefvar_),
-		intercept(intercept_),x_coeff(x_coeff_), x2_coeff(x2_coeff_)
-		{Assert(coefvar > 0. && intercept_ >= 0. && x_coeff >= 0. && x2_coeff >= 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Quadratic_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                           double zone_, double coefvar_, double intercept_, double x_coeff_, double x2_coeff_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , zone(zone_)
+        , coefvar(coefvar_)
+        , intercept(intercept_)
+        , x_coeff(x_coeff_)
+        , x2_coeff(x2_coeff_)
+    {
+        Assert(coefvar > 0. && intercept_ >= 0. && x_coeff >= 0. && x2_coeff >= 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double zone;		// if eccentricity less than this, always available
-	double coefvar;
-	double intercept;
-	double x_coeff;
-	double x2_coeff;
+    long transduction_delay;
+    double zone; // if eccentricity less than this, always available
+    double coefvar;
+    double intercept;
+    double x_coeff;
+    double x2_coeff;
 };
 
 /*
@@ -277,29 +349,39 @@ P(detection) = (1 - lp) * P(size > x), where x ~ Normal(m, s)
 lp = lapse_probability
 m = a + b*ecc + c*ecc^2, where ecc is the eccentricity
 s is a constant
-or 
+or
 P(detection) = lapsed_gaussian_detection_function(size, m, s, lapse_probability);
 */
 
-class QuadraticConstSD : public Availability {
+class QuadraticConstSD : public Availability
+{
 public:
-	QuadraticConstSD(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double lapse_prob_, double a_, double b_, double c_, double sd_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_),
-		lapse_prob(lapse_prob_), a(a_), b(b_), c(c_), sd(sd_)
-		{Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && sd > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    QuadraticConstSD(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                     double lapse_prob_, double a_, double b_, double c_, double sd_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , lapse_prob(lapse_prob_)
+        , a(a_)
+        , b(b_)
+        , c(c_)
+        , sd(sd_)
+    {
+        Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && sd > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double lapse_prob;
-	double a;
-	double b;
-	double c;
-	double sd;
+    long transduction_delay;
+    double lapse_prob;
+    double a;
+    double b;
+    double c;
+    double sd;
 };
 
 /*
@@ -310,32 +392,42 @@ P(detection) = (1 - lp) * P(size > x), where x ~ Normal(m, s)
 lp = lapse_probability
 m = a + b*ecc + c*ecc^2 + d*ecc^3, where ecc is the eccentricity
 s is a constant
-or 
+or
 P(detection) = lapsed_gaussian_detection_function(size, m, s, lapse_probability);
 */
 
-class CubicConstSD : public Availability {
+class CubicConstSD : public Availability
+{
 public:
-	CubicConstSD(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double lapse_prob_, double a_, double b_, double c_, double d_, double sd_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_),
-		lapse_prob(lapse_prob_), a(a_), b(b_), c(c_), d(d_), sd(sd_)
-		{Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && d >= 0. && sd > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
-private:
-	long transduction_delay;
-	double lapse_prob;
-	double a;
-	double b;
-	double c;
-	double d;
-	double sd;
-};
+    CubicConstSD(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                 double lapse_prob_, double a_, double b_, double c_, double d_, double sd_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , lapse_prob(lapse_prob_)
+        , a(a_)
+        , b(b_)
+        , c(c_)
+        , d(d_)
+        , sd(sd_)
+    {
+        Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && d >= 0. && sd > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
 
+private:
+    long transduction_delay;
+    double lapse_prob;
+    double a;
+    double b;
+    double c;
+    double d;
+    double sd;
+};
 
 
 /*
@@ -346,29 +438,39 @@ P(detection) = (1 - lp) * P(size > x), where x ~ Normal(m, s)
 lp = lapse_probability
 m = a + b*ecc + c*ecc^2, where ecc is the eccentricity
 s = noise_coeff * ecc
-or 
+or
 P(detection) = lapsed_gaussian_detection_function(size, m, s, lapse_probability);
 */
 
-class QuadraticLinearSD : public Availability {
+class QuadraticLinearSD : public Availability
+{
 public:
-	QuadraticLinearSD(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double lapse_prob_, double a_, double b_, double c_, double noise_coeff_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_),
-		lapse_prob(lapse_prob_), a(a_), b(b_), c(c_), noise_coeff(noise_coeff_)
-		{Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && noise_coeff > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    QuadraticLinearSD(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                      double lapse_prob_, double a_, double b_, double c_, double noise_coeff_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , lapse_prob(lapse_prob_)
+        , a(a_)
+        , b(b_)
+        , c(c_)
+        , noise_coeff(noise_coeff_)
+    {
+        Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && noise_coeff > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double lapse_prob;
-	double a;
-	double b;
-	double c;
-	double noise_coeff;
+    long transduction_delay;
+    double lapse_prob;
+    double a;
+    double b;
+    double c;
+    double noise_coeff;
 };
 
 /*
@@ -383,28 +485,36 @@ or
 P(detection) = lapsed_gaussian_detection_function(size, m, s, lapse_probability);
 */
 
-class QuadraticCoefVarSD : public Availability {
+class QuadraticCoefVarSD : public Availability
+{
 public:
-	QuadraticCoefVarSD(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double lapse_prob_, double a_, double b_, double c_, double coef_var_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_),
-		lapse_prob(lapse_prob_), a(a_), b(b_), c(c_), coef_var(coef_var_)
-		{Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && coef_var > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    QuadraticCoefVarSD(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                       double lapse_prob_, double a_, double b_, double c_, double coef_var_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , lapse_prob(lapse_prob_)
+        , a(a_)
+        , b(b_)
+        , c(c_)
+        , coef_var(coef_var_)
+    {
+        Assert(lapse_prob >= 0. && a >= 0. && b >= 0. && c >= 0. && coef_var > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double lapse_prob;
-	double a;
-	double b;
-	double c;
-	double coef_var;
+    long transduction_delay;
+    double lapse_prob;
+    double a;
+    double b;
+    double c;
+    double coef_var;
 };
-
-
 
 
 /*
@@ -415,26 +525,33 @@ The function specifies the minimum size for an object.
 All units are in degrees VA.
 The delay is a flat value for the property.
 */
-class Fixed_exponential_availability : public Availability {
+class Fixed_exponential_availability : public Availability
+{
 public:
-	Fixed_exponential_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double coeff_, double expon_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), 
-		coeff(coeff_), expon(expon_)
-		{Assert(coeff > 0. && expon > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Fixed_exponential_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                   long delay_, double coeff_, double expon_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , coeff(coeff_)
+        , expon(expon_)
+    {
+        Assert(coeff > 0. && expon > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double coeff;
-	double expon;
+    long transduction_delay;
+    double coeff;
+    double expon;
 };
 
 /*
-Exponential availability requires that an object size plus a Normal fluctuation 
+Exponential availability requires that an object size plus a Normal fluctuation
 be larger than a value specified as exponential function extending from eccentricity = 0 out to the periphery.
 The object is available if (object_size + fluctuation) > coef *  exp(expon * x)
 where fluctuation is Normal(0., coefvar * object_size)
@@ -442,81 +559,90 @@ For foveal objects (ecc < 1) and size > .1 DVA, always available.
 All units are in degrees VA.
 The delay is a flat value for the property.
 */
-class Exponential_availability : public Availability {
+class Exponential_availability : public Availability
+{
 public:
-	Exponential_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		long delay_, double coefvar_, double coeff_, double expon_) :
-		Availability(physical_store_, property_name_), transduction_delay(delay_), 
-		coefvar(coefvar_), coeff(coeff_), expon(expon_)
-		{Assert(coefvar > 0. && coeff > 0. && expon > 0.);}
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
-	static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-		const Parameter_specification& param_spec, std::istringstream& iss);
+    Exponential_availability(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_,
+                             double coefvar_, double coeff_, double expon_)
+        : Availability(physical_store_, property_name_)
+        , transduction_delay(delay_)
+        , coefvar(coefvar_)
+        , coeff(coeff_)
+        , expon(expon_)
+    {
+        Assert(coefvar > 0. && coeff > 0. && expon > 0.);
+    }
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+    static std::shared_ptr<Availability> create(const Visual_physical_store& physical_store_,
+                                                const Symbol& property_name_, const Parameter_specification& param_spec,
+                                                std::istringstream& iss);
+
 private:
-	long transduction_delay;
-	double coefvar;
-	double coeff;
-	double expon;
+    long transduction_delay;
+    double coefvar;
+    double coeff;
+    double expon;
 };
-
-
-
-
-
 
 
 // These are specific availability functions that use the general functions
 
 /* Color availability. */
-class Color_exp_availability : public Fixed_exponential_availability {
+class Color_exp_availability : public Fixed_exponential_availability
+{
 public:
-	Color_exp_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
+    Color_exp_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
 };
 
 /*
-Color_quad_availability uses a Fixed_quadratic_availability model, but special-cases "Red" if 
+Color_quad_availability uses a Fixed_quadratic_availability model, but special-cases "Red" if
 it is not available. All units are in degrees VA.
 The delay is a flat value for the property.
 */
 
-class Color_quad_availability : public Fixed_quadratic_availability {
+class Color_quad_availability : public Fixed_quadratic_availability
+{
 public:
-	Color_quad_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-private:
-	double red_min_size;
-};
+    Color_quad_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
 
+private:
+    double red_min_size;
+};
 
 
 /* Shape availability */
 
-class Shape_quad_availability : public Fixed_quadratic_availability {
+class Shape_quad_availability : public Fixed_quadratic_availability
+{
 public:
-	Shape_quad_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
+    Shape_quad_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
 };
 
-class Shape_exp_availability : public Fixed_exponential_availability {
+class Shape_exp_availability : public Fixed_exponential_availability
+{
 public:
-	Shape_exp_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
+    Shape_exp_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
 };
 
 /* Text availability */
 
 
-class Text_availability : public Availability {
+class Text_availability : public Availability
+{
 public:
-	Text_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
-	bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
-	std::string get_description() const override;
+    Text_availability(const Visual_physical_store& physical_store_, long delay_ = standard_delay);
+    bool available(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    long delay(std::shared_ptr<Visual_store_object> physobj_ptr) override;
+    std::string get_description() const override;
+
 private:
-	long transduction_delay;
-	double intercept;
-	double x_coeff;
-	double x2_coeff;
+    long transduction_delay;
+    double intercept;
+    double x_coeff;
+    double x2_coeff;
 };
 
 /**************************************************************************************************************
@@ -526,42 +652,55 @@ private:
  Base class for property attention objects.
  The delay function returns a time; it may be called even if the property is not available.
  */
-class Attention {
+class Attention
+{
 public:
-	Attention(const Visual_physical_store& physical_store_, const Symbol& property_name_) :
-        physical_store(physical_store_), property_name(property_name_)
-        {}
-	const Symbol& get_property_name() const 
-        {return property_name;}
-	
-	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation) = 0;
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff) = 0;
-	virtual std::string get_description() const = 0;
-	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store, const Parameter_specification& param_spec);
-	
+    Attention(const Visual_physical_store& physical_store_, const Symbol& property_name_)
+        : physical_store(physical_store_)
+        , property_name(property_name_)
+    {
+    }
+    const Symbol& get_property_name() const
+    {
+        return property_name;
+    }
+
+    // virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation) = 0;
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation,
+                       double attn_coeff) = 0;
+    virtual std::string get_description() const = 0;
+    static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store,
+                                             const Parameter_specification& param_spec);
+
 protected:
-	const Visual_physical_store& physical_store;
+    const Visual_physical_store& physical_store;
+
 private:
-	Symbol property_name;
-	Attention();
+    Symbol property_name;
+    Attention();
 };
 
-/* 
+/*
  Flat attention, does not apply an attention model
  This is the default for all properties
  This function only exists to maintain backwards compatability with old models
  */
-class Flat_attention : public Attention {
+class Flat_attention : public Attention
+{
 public:
-	Flat_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_) :
-	Attention(physical_store_, property_name_){}
-	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
-	virtual std::string get_description() const;
-	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_);
+    Flat_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_)
+        : Attention(physical_store_, property_name_)
+    {
+    }
+    // virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+    virtual std::string get_description() const;
+    static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_,
+                                             const Symbol& property_name_);
+
 private:
-	long transduction_delay;
-	double zone_radius;
+    long transduction_delay;
+    double zone_radius;
 };
 
 /*
@@ -570,20 +709,25 @@ private:
  The function is in the form: y = atten_coeff * x2_coeff * x^2 + intercept
  All units are in degrees VA.
  */
-class Fixed_quadratic_attention : public Attention {
+class Fixed_quadratic_attention : public Attention
+{
 public:
-	Fixed_quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-								 double intercept_, double x2_coeff_) :
-	Attention(physical_store_, property_name_), 
-	intercept(intercept_), x2_coeff(x2_coeff_)
-	{Assert(intercept_ > 0. && x2_coeff > 0.);}
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
-	virtual std::string get_description() const;
-	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-								 const Parameter_specification& param_spec, std::istringstream& iss);
+    Fixed_quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                              double intercept_, double x2_coeff_)
+        : Attention(physical_store_, property_name_)
+        , intercept(intercept_)
+        , x2_coeff(x2_coeff_)
+    {
+        Assert(intercept_ > 0. && x2_coeff > 0.);
+    }
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+    virtual std::string get_description() const;
+    static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                             const Parameter_specification& param_spec, std::istringstream& iss);
+
 private:
-	double intercept;
-	double x2_coeff;
+    double intercept;
+    double x2_coeff;
 };
 
 /*
@@ -593,39 +737,49 @@ private:
  Fluctuation is a normal random distribution defined by coefvar
  All units are in degrees VA.
  */
-class Quadratic_attention : public Attention {
+class Quadratic_attention : public Attention
+{
 public:
-	Quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-							  double intercept_, double x2_coeff_, double coefvar_) :
-	Attention(physical_store_, property_name_), 
-	intercept(intercept_), x2_coeff(x2_coeff_), coefvar(coefvar_)
-	{Assert(intercept_ > 0. && x2_coeff > 0. && coefvar > 0.);}
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
-	virtual std::string get_description() const;
-	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
-							  const Parameter_specification& param_spec, std::istringstream& iss);
+    Quadratic_attention(const Visual_physical_store& physical_store_, const Symbol& property_name_, double intercept_,
+                        double x2_coeff_, double coefvar_)
+        : Attention(physical_store_, property_name_)
+        , intercept(intercept_)
+        , x2_coeff(x2_coeff_)
+        , coefvar(coefvar_)
+    {
+        Assert(intercept_ > 0. && x2_coeff > 0. && coefvar > 0.);
+    }
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+    virtual std::string get_description() const;
+    static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                             const Parameter_specification& param_spec, std::istringstream& iss);
+
 private:
-	double intercept;
-	double x2_coeff;
-	double coefvar;
+    double intercept;
+    double x2_coeff;
+    double coefvar;
 };
 
 /*
  Constant attention delay
  Only parameter is a constant delay value
  */
-class Constant_attention_delay : public Attention {
+class Constant_attention_delay : public Attention
+{
 public:
-	Constant_attention_delay(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_) :
-	Attention(physical_store_, property_name_), transduction_delay(delay_)
-	{}
-	//virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
-	virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
-	virtual std::string get_description() const;
-	static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_, 
-							  const Parameter_specification& param_spec, std::istringstream& iss);
+    Constant_attention_delay(const Visual_physical_store& physical_store_, const Symbol& property_name_, long delay_)
+        : Attention(physical_store_, property_name_)
+        , transduction_delay(delay_)
+    {
+    }
+    // virtual bool available(std::shared_ptr<Visual_store_object> physobj_ptr, double eccentricity_fluctuation);
+    virtual long delay(std::shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff);
+    virtual std::string get_description() const;
+    static std::shared_ptr<Attention> create(const Visual_physical_store& physical_store_, const Symbol& property_name_,
+                                             const Parameter_specification& param_spec, std::istringstream& iss);
+
 private:
-	long transduction_delay;
+    long transduction_delay;
 };
 /**************************************************************************************************************
  **************************************************************************************************************

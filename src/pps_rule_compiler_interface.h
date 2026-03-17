@@ -5,13 +5,14 @@
 
 #include <list>
 
-namespace Parsimonious_Production_System {
+namespace Parsimonious_Production_System
+{
 
-// forward declaration 
+// forward declaration
 class Production_System;
 
-void compile_rules(Production_System * production_system_ptr, Compiler_rule_data_list_t& production_list);
+void compile_rules(Production_System* production_system_ptr, Compiler_rule_data_list_t& production_list);
 
-} // end namespace
+} // namespace Parsimonious_Production_System
 
 #endif

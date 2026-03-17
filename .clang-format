@@ -1,0 +1,68 @@
+# EPICLib C++ formatting style
+# Based on existing codebase patterns with standard best practices
+
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Indentation
+UseTab: Never
+TabWidth: 4
+IndentWidth: 4
+ContinuationIndentWidth: 4
+
+# Braces
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterControlStatement: Never
+  AfterExternBlock: true
+  BeforeElse: true
+  BeforeCatch: true
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+# Spacing
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInParentheses: false
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeRangeBasedForLoopColon: true
+
+# Pointer/Reference alignment
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Line length
+ColumnLimit: 120
+
+# Includes
+SortIncludes: false
+IncludeBlocks: Preserve
+
+# Other
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
+AlwaysBreakTemplateDeclarations: Yes
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: false
+NamespaceIndentation: None
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Alignment
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignTrailingComments: true
+AlignOperands: true

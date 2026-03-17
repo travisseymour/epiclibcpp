@@ -3,12 +3,12 @@
 #include <string>
 #include <sstream>
 
-using std::string;
 using std::ostringstream;
+using std::string;
 
-Assertion_exception::Assertion_exception (const char * condition_, const char * filename_, int lineno_)
+Assertion_exception::Assertion_exception(const char* condition_, const char* filename_, int lineno_)
 {
-	ostringstream ss;
-	ss << "Assertion exception: " << condition_ << " failed in " << filename_ << " line " << lineno_;
-	msg = ss.str();
+    ostringstream ss;
+    ss << "Assertion exception: " << condition_ << " failed in " << filename_ << " line " << lineno_;
+    msg = ss.str();
 }

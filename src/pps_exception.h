@@ -5,10 +5,17 @@
 #include "exception.h"
 
 // The base class for PPS exceptions
-class PPS_exception : public Exception {
+class PPS_exception : public Exception
+{
 public:
-	PPS_exception(): Exception("Unspecified PPS exception") {}
-	PPS_exception(const std::string& msg_) : Exception(msg_) {}
+    PPS_exception()
+        : Exception("Unspecified PPS exception")
+    {
+    }
+    PPS_exception(const std::string& msg_)
+        : Exception(msg_)
+    {
+    }
 };
 
 #endif
