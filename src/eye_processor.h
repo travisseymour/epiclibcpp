@@ -27,6 +27,7 @@ namespace GU = Geometry_Utilities;
 #include "eye_retina_functions.h"
 #include "name_map.h"
 #include "statistics.h"
+#include "visual_attention_processor.h"
 
 #include <map>
 //#include <set>
@@ -117,6 +118,16 @@ public:
 //	typedef bool (*Availability_function_t)(const Visual_physical_object&, double eccentricity_fluctuation);
 //	typedef long (*Delay_function_t)(const Visual_physical_object&, double time_fluctuation);
 
+	// attention functions
+	void focus_attention(double delta_a); //function used to modulate attention curve
+	void set_attention(double a); //sets the attention coeff directly
+    
+    // saliency functions
+    void insert_spatial_cue(const Symbol& objname);
+    void insert_regional_cue(const Symbol& region);
+    void cue_previous();
+    void clear_spatial_map();
+
 private:
 
 	// state
@@ -156,6 +167,15 @@ private:
 	Availability_map_t availabilities;
 	std::shared_ptr<Availability> default_availability;
 	
+	// attention delay types
+    typedef std::map<Symbol, std::shared_ptr<Attention> > Attention_map;
+	Attention_map attention_list;
+	std::shared_ptr<Attention> default_attention;
+	double attention_coeff;
+
+    // saliency map container
+    std::shared_ptr<Visual_attention_processor> visual_saliency;
+
 	// state
 	long psychobj_counter;	// counter for new object psychologial names
 	Name_map name_map;	// name map for visual objects

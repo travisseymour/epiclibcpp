@@ -235,3 +235,30 @@ const Symbol Stop_c("Stop");
 const Symbol Halt_c("Halt");
 const Symbol End_c("End");					// For temporal
 const Symbol Increment_c("Increment");		// For temporal
+
+//Char object properties (added for flanker task)
+const Symbol Char_Line_Vert_c("Char_Line_Vert");
+const Symbol Char_Line_Horiz_c("Char_Line_Horiz");
+const Symbol Char_Line_Diag_c("Char_Line_Diag");
+const Symbol Char_Line_Smooth_c("Char_Line_Smooth");
+const Symbol Char_Point_Left_c("Char_Point_Left");
+const Symbol Char_Point_Right_c("Char_Point_Right");
+const Symbol Char_Curve_Open_c("Char_Curve_Open");
+const Symbol Char_Curve_Closed_c("Char_Curve_Closed");
+
+//MWalton: Attention properties
+const Symbol Focus_c("Focus");
+const Symbol Set_attn_c("Set");
+
+//MWalton: Attentional Saliency Properties
+//const Symbol Gaussian_c("Gaussian");
+const Symbol Attention_c("Attend_to");
+const Symbol Cue_c("Cue");
+const Symbol Region_c("Region");
+const Symbol Upper_Right_c("Upper_Right");
+const Symbol Upper_Left_c("Upper_Left");
+const Symbol Lower_Left_c("Lower_Left");
+const Symbol Lower_Right_c("Lower_Right");
+const Symbol Visual_Space_c("Visual_Space");
+const Symbol Clear_c("Null");
+const Symbol Previous_c("Previous");

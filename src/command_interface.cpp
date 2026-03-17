@@ -8,6 +8,7 @@
 //#include "Smart_Pointer.h"
 #include "pps_globals.h"
 #include "epic_standard_symbols.h"
+#include "eye_processor.h"
 
 #include <memory>
 #include <iostream>
@@ -57,6 +58,46 @@ void Command_interface::dispatch(const Symbol_list_t& arguments)
 		else
 			throw Command_exception(human_ptr,
 				string("Invalid rule Temporal action specification: (") + concatenate_to_string(arguments) + ")");
+		return;
+	}
+
+	// Modulate attentional focus
+	else if(arguments.front() == "Modulate_attention")
+	{
+		Symbol_list_t args = arguments;	// so we can modify the argument list
+		args.pop_front();
+
+		if(args.front() == Focus_c)
+			human_ptr->get_Eye_processor_ptr()->focus_attention(arguments.back().get_numeric_value());
+		else if(args.front() == Set_attn_c)
+			human_ptr->get_Eye_processor_ptr()->set_attention(arguments.back().get_numeric_value());
+		else
+			throw Command_exception(human_ptr,
+									string("Invalid rule Modulate attention: (") + concatenate_to_string(arguments) + ")");
+		return;
+	}
+
+    // Attend_to commands for spatial attention/saliency cues
+    else if(arguments.front() == "Attend_to")
+	{
+		Symbol_list_t args = arguments;	// so we can modify the argument list
+		args.pop_front();
+
+		if(args.front() == Cue_c) {
+            args.pop_front();
+            const Symbol cue_name = args.front();
+            human_ptr->get_Eye_processor_ptr()->insert_spatial_cue(cue_name);
+        } else if (args.front() == Region_c) {
+            args.pop_front();
+            const Symbol region = args.front();
+            human_ptr->get_Eye_processor_ptr()->insert_regional_cue(region);
+        } else if (args.front() == Clear_c) {
+            human_ptr->get_Eye_processor_ptr()->clear_spatial_map();
+        } else if (args.front() == Previous_c) {
+            human_ptr->get_Eye_processor_ptr()->cue_previous();
+        } else
+			throw Command_exception(human_ptr,
+									string("Invalid rule Attend_to: (") + concatenate_to_string(arguments) + ")");
 		return;
 	}
 

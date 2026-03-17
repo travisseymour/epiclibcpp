@@ -982,3 +982,173 @@ string Text_availability::get_description() const
 		<< " components per degree eccentricity after " << transduction_delay << " ms.";
 	return oss.str();
 }
+
+/**************************************************************************************************************
+ **************************************************************************************************************
+ **************************************************************************************************************/
+std::shared_ptr<Attention> Attention::create(const Visual_physical_store& physical_store, const Parameter_specification& param_spec)
+{
+	istringstream iss(param_spec.specification);
+	// first term is property name
+	string property_name;
+	iss >> property_name;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read property name in parameter specification", param_spec);
+	Symbol prop_name(property_name);
+	// second term is attention function type, followed by terms depending on type
+	string func_type;
+	iss >> func_type;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read attention function type in parameter specification", param_spec);
+	// let each attention type parse the rest of the input
+	if(func_type == "Flat")
+		return Flat_attention::create(physical_store, prop_name);
+	if(func_type == "Fixed_quadratic")
+		return Fixed_quadratic_attention::create(physical_store, prop_name, param_spec, iss);
+	if(func_type == "Quadratic")
+		return Quadratic_attention::create(physical_store, prop_name, param_spec, iss);
+	if(func_type == "Constant")
+		return Constant_attention_delay::create(physical_store, prop_name, param_spec, iss);
+	
+	Parameter::throw_parameter_error("Unrecognized availability function type in parameter specification", param_spec);
+	return 0;
+}
+
+/* 
+ Flat attention, does not apply an attention model
+ This is the default for all properties
+ This function only exists to maintain backwards compatability with old models
+ */
+long Flat_attention::delay(shared_ptr<Visual_store_object>, double time_fluctuation, double atten_coeff)
+{
+	return long(0);
+}
+
+string Flat_attention::get_description() const
+{
+	ostringstream oss;
+	oss << get_property_name() << " does not impliment an attention function.  This is the default for this property.";
+	return oss.str();
+}
+
+std::shared_ptr<Attention> Flat_attention::create(const Visual_physical_store& physical_store, const Symbol& prop_name)
+{
+	//return new Flat_attention(physical_store, prop_name);
+    return std::shared_ptr<Attention>(new Flat_attention(physical_store, prop_name));
+}
+
+/*
+ Fixed_quadratic attention varies the transduction delay as a function of eccentricity
+ as a 2nd-order polynomial function extending from eccentricity = 0 out to the periphery.
+ The function is in the form: y = atten_coeff * x2_coeff * x^2 + intercept
+ All units are in degrees VA.
+ */
+long Fixed_quadratic_attention::delay(shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff)
+{
+	double eccentricity = physobj_ptr->get_eccentricity();
+	double transduction_delay = intercept + attn_coeff * x2_coeff * eccentricity * eccentricity;
+	return long(transduction_delay * time_fluctuation);
+}
+
+string Fixed_quadratic_attention::get_description() const
+{
+	//write new description
+	ostringstream oss;
+	oss << get_property_name() << ": Delay due to attention varies quadradatically from " << intercept << " at eccentricity 0."
+	"\n\tThe shape of the funciton is defined by the attention coefficient and the x^2 coeff: " << x2_coeff;
+	return oss.str();
+}
+
+std::shared_ptr<Attention> Fixed_quadratic_attention::create(const Visual_physical_store& physical_store, const Symbol& prop_name,
+													const Parameter_specification& param_spec, istringstream& iss)
+{
+	double intercept;
+	iss >> intercept;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read intercept in parameter specification", param_spec);
+	double x2_coeff;
+	iss >> x2_coeff;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read x2_coeff in parameter specification", param_spec);
+	
+	return std::shared_ptr<Attention>(new Fixed_quadratic_attention(physical_store, prop_name, intercept, x2_coeff));
+}
+
+/*
+ Quadratic attention varies the transduciton delay as a funciton of eccentricity
+ as a 2nd-order polynomial function extending from eccentricity = 0 out to the periphery.
+ The function is in the form: y = atten_coeff * x2_coeff * x^2 + intercept + fluctuation
+ Fluctuation is a normal random distribution defined by coefvar
+ All units are in degrees VA.
+ */
+long Quadratic_attention::delay(shared_ptr<Visual_store_object> physobj_ptr, double time_fluctuation, double attn_coeff)
+{
+	double eccentricity = physobj_ptr->get_eccentricity();
+	double obj_size = (physobj_ptr->get_size().h + physobj_ptr->get_size().v) / 2.0;
+	double fluctuation = normal_random_variable(0., coefvar * obj_size);
+	
+	double transduction_delay = intercept + attn_coeff * x2_coeff * eccentricity * eccentricity;
+	
+	return long(transduction_delay * time_fluctuation + fluctuation);
+}
+
+string Quadratic_attention::get_description() const
+{
+	//write new description
+	ostringstream oss;
+	oss << get_property_name() << ": Delay due to attention varies quadradatically from " << intercept << " at eccentricity 0."
+	"\n\tThe shape of the funciton is defined by the attention coefficient and the x^2 coeff: " << x2_coeff << " plus a random deviation: " 
+	<< coefvar;
+	return oss.str();
+}
+
+std::shared_ptr<Attention> Quadratic_attention::create(const Visual_physical_store& physical_store, const Symbol& prop_name,
+											  const Parameter_specification& param_spec, istringstream& iss)
+{
+	double intercept;
+	iss >> intercept;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read intercept in parameter specification", param_spec);
+	double x2_coeff;
+	iss >> x2_coeff;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read x2_coeff in parameter specification", param_spec);
+	double coefvar;
+	iss >> coefvar;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read coefvar in parameter specification", param_spec);
+	
+	return std::shared_ptr<Attention>(new Quadratic_attention(physical_store, prop_name, intercept, x2_coeff, coefvar));
+}
+
+/*
+ Constant attention delay
+ Only parameter is a constant delay value
+ */
+long Constant_attention_delay::delay(shared_ptr<Visual_store_object>, double time_fluctuation, double attn_coeff)
+{
+	return long(transduction_delay * time_fluctuation);
+}
+
+string Constant_attention_delay::get_description() const
+{
+	//write new description
+	ostringstream oss;
+	oss << get_property_name() << "has a fixed attention delay of: " << transduction_delay << "ms";
+	return oss.str();
+}
+
+std::shared_ptr<Attention> Constant_attention_delay::create(const Visual_physical_store& physical_store, const Symbol& prop_name,
+											  const Parameter_specification& param_spec, istringstream& iss)
+{
+	long delay;
+	iss >> delay;
+	if(!iss)
+		Parameter::throw_parameter_error("Unable to read availability delay in parameter specification", param_spec);
+	
+	return std::shared_ptr<Attention>(new Constant_attention_delay(physical_store, prop_name, delay));
+}
+
+/**************************************************************************************************************
+ **************************************************************************************************************
+ **************************************************************************************************************/

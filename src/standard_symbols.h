@@ -234,7 +234,6 @@ extern const Symbol Male_c;
 extern const Symbol Female_c;
 extern const Symbol Speaker_c;
 
-
 /* Other standard Symbols */
 // standard signal values
 extern const Symbol Signal_c;
@@ -243,5 +242,32 @@ extern const Symbol Stop_c;
 extern const Symbol Halt_c;
 extern const Symbol End_c;				// For temporal
 extern const Symbol Increment_c;		// For temporal
+
+//Character object properties (for flanker task)
+extern const Symbol Char_Line_Vert_c;
+extern const Symbol Char_Line_Horiz_c;
+extern const Symbol Char_Line_Diag_c;
+extern const Symbol Char_Line_Smooth_c;
+extern const Symbol Char_Point_Left_c;
+extern const Symbol Char_Point_Right_c;
+extern const Symbol Char_Curve_Open_c;
+extern const Symbol Char_Curve_Closed_c;
+
+//MWalton: Attention properties
+extern const Symbol Focus_c;
+extern const Symbol Set_attn_c;
+
+//MWalton: Attentional saliency properties
+//extern const Symbol Gaussian_c;
+extern const Symbol Attention_c;
+extern const Symbol Cue_c;
+extern const Symbol Region_c;
+extern const Symbol Upper_Right_c;
+extern const Symbol Upper_Left_c;
+extern const Symbol Lower_Left_c;
+extern const Symbol Lower_Right_c;
+extern const Symbol Visual_Space_c;
+extern const Symbol Clear_c;
+extern const Symbol Previous_c;
 
 #endif

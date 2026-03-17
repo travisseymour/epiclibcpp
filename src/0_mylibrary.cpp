@@ -944,7 +944,7 @@ PYBIND11_MODULE(epiclib, m) {
 
     py::module_ su = m.def_submodule("symbol_utilities");
     su.doc() = "EPICLib module for Symbol manipulation";
-    su.def("get_nth_Symbol", (Symbol (*)(Symbol_list_t&, long)) &get_nth_Symbol, "Return the nth Symbol in the list");
+    su.def("get_nth_Symbol", (Symbol (*)(const Symbol_list_t&, int)) &get_nth_Symbol, "Return the nth Symbol in the list");
     su.def("cstr_to_Symbol_list", &cstr_to_Symbol_list, "Convert a C-string to a Symbol list");
     su.def("int_to_Symbol", &int_to_Symbol, "Convert an integer to a Symbol");
     su.def("concatenate_to_Symbol", (Symbol (*)(const char *, long)) &concatenate_to_Symbol, "Concatenate to a Symbol with a string and an integer");
@@ -958,7 +958,7 @@ PYBIND11_MODULE(epiclib, m) {
 
     py::module_ sc = m.def_submodule("syllable_counter");
     sc.doc() = "EPICLib module to count syllables";
-    sc.def("count_total_syllables", (long (*)(const std::string&)) &count_total_syllables);
+    sc.def("count_total_syllables", (int (*)(const std::string&)) &count_total_syllables);
 
     py::module_ ss = m.def_submodule("standard_symbols");
     ss.doc() = "EPICLib module containing standard symbols";

@@ -164,6 +164,94 @@ void Eye_processor::setup()
 	default_availability = 
 		make_shared<Fovea_std_zone_availability>(physical_store, Default_c);
 
+	//TSeymour: Char object availabilities for flanker task
+	availabilities[Char_Line_Vert_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Line_Vert_c);
+	availabilities[Char_Line_Horiz_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Line_Horiz_c);
+	availabilities[Char_Line_Diag_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Line_Diag_c);
+	availabilities[Char_Line_Smooth_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Line_Smooth_c);
+	availabilities[Char_Point_Left_c] =
+        make_shared<Relation_std_zone_availability>(physical_store, Char_Point_Left_c);
+	availabilities[Char_Point_Right_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Point_Right_c);
+	availabilities[Char_Curve_Open_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Curve_Open_c);
+	availabilities[Char_Curve_Closed_c] = 
+		make_shared<Relation_std_zone_availability>(physical_store, Char_Curve_Closed_c);
+	
+	//MWalton: attentional entries for various properties
+	attention_list[Position_c] =
+		make_shared<Flat_attention>(physical_store, Position_c);
+	attention_list[Vposition_c] = 
+		make_shared<Flat_attention>(physical_store, Vposition_c);
+	attention_list[Hposition_c] = 
+		make_shared<Flat_attention>(physical_store, Hposition_c);
+	attention_list[In_row_c] = 
+		make_shared<Flat_attention>(physical_store, In_row_c);
+	attention_list[In_col_c] = 
+		make_shared<Flat_attention>(physical_store, In_col_c);
+	attention_list[Orientation_c] = 
+		make_shared<Flat_attention>(physical_store, Orientation_c);
+	attention_list[Leader_c] = 
+		make_shared<Flat_attention>(physical_store, Leader_c);
+	attention_list[Above_c] = 
+		make_shared<Flat_attention>(physical_store, Above_c);
+	attention_list[Below_c] = 
+		make_shared<Flat_attention>(physical_store, Below_c);
+	attention_list[Left_of_c] = 
+		make_shared<Flat_attention>(physical_store, Left_of_c);
+	attention_list[Right_of_c] = 
+		make_shared<Flat_attention>(physical_store, Right_of_c);
+	attention_list[Inside_c] = 
+		make_shared<Flat_attention>(physical_store, Inside_c);
+	attention_list[In_center_of_c] = 
+		make_shared<Flat_attention>(physical_store, In_center_of_c);
+	attention_list[Outside_c] = 
+		make_shared<Flat_attention>(physical_store, Outside_c);
+	attention_list[Placed_on_c] = 
+		make_shared<Flat_attention>(physical_store, Placed_on_c);
+	attention_list[Depth_c] = 
+		make_shared<Flat_attention>(physical_store, Depth_c);
+	attention_list[Distance_c] = 
+		make_shared<Flat_attention>(physical_store, Distance_c);
+	attention_list[Color_c] = 
+		make_shared<Flat_attention>(physical_store, Color_c);
+    attention_list[Targetable_c] =
+        make_shared<Flat_attention>(physical_store, Targetable_c);
+	attention_list[Shape_c] = 
+		make_shared<Flat_attention>(physical_store, Shape_c);
+	attention_list[Text_c] = 
+		make_shared<Flat_attention>(physical_store, Text_c);
+	attention_list[Encoded_size_c] = 
+		make_shared<Flat_attention>(physical_store, Encoded_size_c);
+	default_attention = 
+		make_shared<Flat_attention>(physical_store, Default_c);
+	
+	//Flanker property attention entries
+	attention_list[Char_Line_Vert_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Line_Vert_c);
+	attention_list[Char_Line_Horiz_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Line_Horiz_c);
+	attention_list[Char_Line_Diag_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Line_Diag_c);
+	attention_list[Char_Line_Smooth_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Line_Smooth_c);
+	attention_list[Char_Point_Left_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Point_Left_c);
+	attention_list[Char_Point_Right_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Point_Right_c);
+	attention_list[Char_Curve_Open_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Curve_Open_c);
+	attention_list[Char_Curve_Closed_c] = 
+		make_shared<Flat_attention>(physical_store, Char_Curve_Closed_c);	
+    
+    //MWalton: Saliency map
+//    visual_saliency = new Visual_attention_processor();
+    visual_saliency = make_shared<Visual_attention_processor>();
+
 	add_parameter(appearance_disappearance_delay);
 	add_parameter(eccentricity_delay);
 //	add_parameter(disappearance_delay);
@@ -198,6 +286,7 @@ void Eye_processor::initialize()
 	auditory_reflex_on= false;
 	involuntary_movement_in_progress= false;
 	last_invol_ocular_command_time = 0;
+	attention_coeff = 1; //MWalton: Attnetion
 	
 	//availability_accumulator.reset();
 	
@@ -221,6 +310,12 @@ void Eye_processor::set_parameter(const Parameter_specification& param_spec)
 		shared_ptr<Availability> p = Availability::create(physical_store, param_spec);
 		availabilities[p->get_property_name()] = p;
 		}
+	//MWalton: Attention
+	else if (param_spec.parameter_name == "Attention") {
+		Visual_physical_store& physical_store = *(get_human_ptr()->get_Visual_physical_store_ptr());
+		shared_ptr<Attention> p = Attention::create(physical_store, param_spec);
+		attention_list[p->get_property_name()] = p;
+    }
 	else {
 		Human_subprocessor::set_parameter(param_spec);
 		}
@@ -235,6 +330,13 @@ void Eye_processor::describe_parameters(Output_tee& ot) const
 //		shared_ptr<Availability> a_ptr = it->second;
 		ot << "    " << it->second->get_description() << endl;
 		}
+	// MWalton: Attention
+	ot << "Attention:" << endl;
+	for(Attention_map::const_iterator it = attention_list.begin(); it != attention_list.end(); ++it) {
+		ot << "    " << it->second->get_description() << endl;
+	}
+    ot << "Visual Saliency:" << endl;
+    ot << "    " << visual_saliency->get_description() << endl;
 }
 
 
@@ -637,6 +739,26 @@ void Eye_processor::set_object_property(const Symbol& physical_name, const Symbo
 //		Normal_out << "Set Color: " << obj_ptr->get_name() << ' ' << new_value << endl;
 	
 	// go ahead and send the property forward
+
+    //MWalton Attention:
+    // look up attention function for this property
+    Attention_map::iterator it_attention = attention_list.find(prop_name);
+    if (it_attention != attention_list.end()) {
+        std::shared_ptr<Attention> atten_ptr = it_attention->second;
+        long atten_delay = atten_ptr->delay(obj_ptr, property_time_fluctuation.get_double_value(), attention_coeff);
+        //if a non-zero attention value has been defined, use that
+        if (atten_delay > 0) {
+            delay = atten_delay;
+            // std::cout << prop_name << " ECC:" << obj_ptr->get_eccentricity() << " DELAY:" << delay << " ATTN_COEFF:" << attention_coeff << "\n"; //DEBUG output
+        }
+    }
+	//MWalton Attention Saliency Map:
+    //make variation based on visual saliency if defined
+    if (visual_saliency != NULL) {
+        GU::Point eye_loc = get_human_ptr()->get_Eye_processor_ptr()->get_location();
+        delay = visual_saliency->delay(delay, obj_ptr, eye_loc, property_time_fluctuation.get_double_value());
+	}
+
 	// queue a message to the sensory store
 	schedule_event(new Visual_Change_Property_event(get_time() + delay, 
 		get_human_ptr()->get_visual_sensory_store_ptr(), name_map.get_psychological_name(physical_name), prop_name, new_value));
@@ -1090,4 +1212,46 @@ bool Eye_processor::free_to_move() const
 		get_human_ptr()->get_Ocular_processor_ptr()->get_processor_free()
 		);
 */
+}
+
+/*
+ Saliency map cue insertion
+ */
+
+void Eye_processor::insert_spatial_cue(const Symbol& objname) {
+    visual_saliency->spatial_cue(get_human_ptr(), objname);
+}
+
+void Eye_processor::insert_regional_cue(const Symbol& region) {
+    visual_saliency->regional_cue(region);
+}
+
+void Eye_processor::cue_previous() {
+    visual_saliency->spatial_cue(get_human_ptr());
+}
+
+void Eye_processor::clear_spatial_map() {
+    visual_saliency->clear_endogenous_spatial();
+}
+
+/*
+ Attention coefficient modulation function
+ Rule: (Modulate_attention focus <value>)
+ where value = change in attention_coeff
+ value cannot be <= 0, minimum enforced at .01
+ */
+void Eye_processor::focus_attention(double delta_a)
+{
+	attention_coeff += delta_a;
+	if (attention_coeff <= 0.01) {
+		attention_coeff = 0.01;
+	}
+}
+
+void Eye_processor::set_attention(double a)
+{
+	attention_coeff = a;
+	if (attention_coeff <= 0.01) {
+		attention_coeff = 0.01;
+	}
 }

@@ -538,7 +538,39 @@ void PPS_file_parser::parse_action (Compiler_rule_data& production)
 		else
 			throw PPS_parser_exception(input, "Expecting a ')' after temporal command specification");
 		}		
+
+	// (Modulate_attention <command> <argument> ... )
+	else if (token == "Modulate_attention") {
+		Symbol_list_t command = parse_command();
+		if (command.size() == 0)
+			throw PPS_parser_exception(input, "Modulate attention command must include specifications");
+		// put the command term itself at the beginning (to distinguish from the default, motor command)
+		command.push_front(Symbol(token));
 		
+		if (input.find_token() == ")") {
+			input.advance();
+			production.command_action_list.push_back(command);
+		}
+		else
+			throw PPS_parser_exception(input, "Expecting a ')' after temporal command specification");
+	}
+    
+    // (Attention <command> <argument> ... )
+	else if (token == "Attend_to") {
+		Symbol_list_t command = parse_command();
+		if (command.size() == 0)
+			throw PPS_parser_exception(input, "Attention command must include specifications");
+		// put the command term itself at the beginning (to distinguish from the default, motor command)
+		command.push_front(Symbol(token));
+		
+		if (input.find_token() == ")") {
+			input.advance();
+			production.command_action_list.push_back(command);
+		}
+		else
+			throw PPS_parser_exception(input, "Expecting a ')' after temporal command specification");
+	}
+
 	else if (token == "Log") {
 		Symbol_list_t command = parse_command();	// ajh & teh - 3/08
 		if (command.size() == 0)

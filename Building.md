@@ -1,59 +1,76 @@
 # Building and Pushing to PyPI
 
-1. Make changes to module  
-2. Update the version in `pyproject.toml`.
+## How Versioning Works
+
+This project uses **setuptools_scm** to automatically determine the version from git tags. You do not manually set a version in `pyproject.toml`.
+
+- Tagged commits (e.g., `v0.1.0`) get that exact version
+- Commits after a tag get a dev version (e.g., `0.1.1.dev3+g1234567`)
+
+To check the current version locally:
+
+```bash
+pip install setuptools_scm  # if not already installed
+python -m setuptools_scm
+```
 
 ---
 
-## If you want to push to **TestPyPI**
+## Local Testing (without uploading)
 
-3. Set a **dev version** (must include `.dev`), e.g.
+Build and test locally before pushing anywhere:
 
-```toml
-[project]
-name = "epiclibcpp"
-version = "0.1.0.dev1"
+1. Build the wheel:
+
+```bash
+./build_local.sh
 ```
 
-4. **Commit and push to `main`.**  
-   → This builds wheels and uploads to **TestPyPI**. It can take ~30-45 minutes.
+2. Test the local build:
 
-5. **Test install from TestPyPI** (requires `uv`):
+```bash
+./run_tests/run_test_from_local_build.py
+```
+
+This builds a wheel for your current platform only and tests it in a temporary virtualenv.
+
+---
+
+## Pushing to TestPyPI
+
+Any push to the `main` branch automatically builds wheels and uploads to **TestPyPI**.
+
+1. Make changes to module
+2. Commit and push to `main`
+   → Wheels are built and uploaded to TestPyPI (takes ~30-45 minutes)
+3. Test install from TestPyPI:
 
 ```bash
 ./run_test_from_test_pypi.py
 ```
 
-> If that dev version already exists on TestPyPI, bump the suffix (e.g., `.dev2`).
-
 ---
 
-## If you want to push to the **regular PyPI**
+## Pushing to PyPI
 
-3. Set a **release version** (no `.dev`), e.g.
+Pushing a version tag triggers a build and upload to **PyPI**.
 
-```toml
-[project]
-name = "epiclibcpp"
-version = "0.1.0"
-```
-
-4. **Commit and push to `main`.**  
-   → This builds wheels (no upload yet).
-
-5. **Tag the same commit and push the tag** to trigger the PyPI upload:
+1. Make changes to module
+2. Commit and push to `main`
+3. Tag the commit and push the tag:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
-**If** `git push origin ...` gives a "Permission denied to XXXXX" error, you may have to run this first:
+
+**If** `git push origin ...` gives a "Permission denied" error, you may need to run:
 
 ```bash
 git remote set-url origin git@github.com:travisseymour/epiclibcpp.git
 ```
 
-6. **Test install from PyPI**:
+4. Test install from PyPI:
 
 ```bash
 ./run_test_from_pypi.py
@@ -63,6 +80,9 @@ git remote set-url origin git@github.com:travisseymour/epiclibcpp.git
 
 ## Summary
 
-- Branch push with a `.dev*` version → builds and uploads to **TestPyPI**.  
-- Tag push with a non-dev version → builds and uploads to **PyPI**.  
-- Always increment your version number before publishing to avoid conflicts.
+| Action | Destination |
+|--------|-------------|
+| Push to `main` branch | TestPyPI |
+| Push a `v*.*.*` tag | PyPI |
+
+Always increment your version tag before publishing to PyPI to avoid conflicts.

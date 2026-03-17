@@ -34,7 +34,7 @@ bool biased_coin_flip(double p);
 double unit_uniform_random_variable();
 double uniform_random_variable(double mean, double deviation);
 double unit_normal_random_variable();
-// do not call this function is sd == 0
+// do not call this function if sd == 0
 double normal_random_variable(double mean, double sd);
 //double exponential_random_variable(double theta);
 //double floored_exponential_random_variable(double theta, double floor);
