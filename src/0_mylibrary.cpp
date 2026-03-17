@@ -398,10 +398,10 @@ PYBIND11_MODULE(epiclib, m) {
         throw Epic_exception(str);
     });
 
-    // Submodule to mirror your header name for convenience:
+    // Submodule to mirror the header name for convenience:
     auto m_globals = m.def_submodule("output_tee_globals", "Global Output_tee instances");
 
-    // Output_tee class (Python-facing helpers only; you can expose more if you want)
+    // Output_tee class (Python-facing helpers only)
     auto pyOutputTee = py::class_<Output_tee>(m, "Output_tee")
         .def("add_view",
             static_cast<void (Output_tee::*)(View_base*)>(&Output_tee::add_view),
@@ -420,7 +420,7 @@ PYBIND11_MODULE(epiclib, m) {
              "Write a string (identical to the C++ << path).")
         .def("py_flush", &Output_tee::py_flush)
         .def("py_close", &Output_tee::py_close)
-        // Nice ergonomic sugar so you can do: Normal_out("hello")
+        // Nice ergonomic sugar so we can do: Normal_out("hello")
         .def("__call__", &Output_tee::py_write, py::arg("text"));
 
     // Bind the global tee instances by reference
