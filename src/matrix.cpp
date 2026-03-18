@@ -6,9 +6,9 @@
  *  Copyright (c) 2013 Michael Walton. All rights reserved.
  */
 
-#include <iostream>
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <iostream>
 #include <cassert>
 #include <iomanip>
 #include <sstream>
