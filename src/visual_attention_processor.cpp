@@ -262,7 +262,8 @@ long Visual_attention_processor::delay(double min_delay, std::shared_ptr<Visual_
     double max_delay = min_delay + min_delay * delay_deviation_magnitude;
 
     double delay_range = max_delay - min_delay;
-    double map_value = saliency.get_value(retinotopic_coordinate.x, retinotopic_coordinate.y);
+    double map_value = saliency.get_value(static_cast<size_t>(retinotopic_coordinate.x),
+                                          static_cast<size_t>(retinotopic_coordinate.y));
 
     double max = saliency.get_max();
     double scalar = (1 - map_value / max);

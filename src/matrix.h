@@ -46,9 +46,9 @@ public:
     void convolution(Matrix m);
 
     // Accessors
-    unsigned long get_height();
-    unsigned long get_width();
-    double get_value(int x, int y);
+    size_t get_height();
+    size_t get_width();
+    double get_value(size_t x, size_t y);
     double sum();
     double get_max();
 
