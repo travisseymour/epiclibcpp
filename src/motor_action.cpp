@@ -42,6 +42,8 @@ shared_ptr<Motor_action> Motor_action::create(Human_processor* human_ptr, Symbol
         execute_when_prepared = true;
     else if (command == Prepare_c)
         execute_when_prepared = false;
+    else if (command == Abort_c)
+        execute_when_prepared = false;
     else
         return 0;
 

@@ -317,6 +317,11 @@ long Ocular_Saccade_action::execute(long base_time)
     return movement_completion_time;
 }
 
+long Ocular_Saccade_action::abort(long, int)
+{
+    return 0;
+}
+
 
 // These constructors set up the object name, source, and location for a saccade
 Ocular_Move_action::Ocular_Move_action(Human_processor* human_ptr, const Symbol_list_t arguments,
@@ -396,6 +401,11 @@ long Ocular_Mode_action::execute(long base_time)
     return movement_completion_time;
 }
 
+long Ocular_Mode_action::abort(long, int)
+{
+    return 0;
+}
+
 /* GOMS Look_for operator implementation */
 // Send_to_motor Ocular Look_for method_name tag_name p v p v ...
 // results in eye on object and (Tag method_name object tag_name) in PPS database
@@ -464,6 +474,11 @@ long Ocular_Look_for_action::execute(long base_time)
 
 
     return movement_completion_time;
+}
+
+long Ocular_Look_for_action::abort(long, int)
+{
+    return 0;
 }
 
 

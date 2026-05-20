@@ -23,6 +23,9 @@ const Symbol Periphery_c("Periphery");
 // Standard names for motor command terms:
 const Symbol Perform_c("Perform");
 const Symbol Prepare_c("Prepare");
+const Symbol Abort_c("Abort");
+const Symbol AbortFailed_c("Abort Failed");
+const Symbol AbortSuccessful_c("Abort Successful");
 const Symbol Manual_c("Manual");
 const Symbol Keystroke_c("Keystroke");
 const Symbol Hold_c("Hold");

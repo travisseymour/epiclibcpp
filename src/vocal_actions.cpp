@@ -178,6 +178,11 @@ long Vocal_Speak_action::execute(long base_time)
     return movement_completion_time;
 }
 
+long Vocal_Speak_action::abort(long, int)
+{
+    return 0;
+}
+
 // return the number of ms to articulate the utterance
 long Vocal_Speak_action::articulation_time()
 {

@@ -38,6 +38,7 @@ using namespace pybind11::literals; // to bring in the `_a` literal
 #include "speech_word.h"
 #include "visual_encoder_base.h"
 #include "visual_perceptual_processor.h"
+#include "eye_processor.h"
 #include "view_base.h"
 #include "numeric_utilities.h"
 #include "epic_exception.h"
@@ -97,6 +98,37 @@ void set_visual_encoder_ptr(const Model& model, Visual_encoder_base* encoder)
 void set_auditory_encoder_ptr(const Model& model, Auditory_encoder_base* encoder)
 {
     model.get_human_ptr()->set_aditory_encoder_ptr(encoder);
+}
+
+// Saliency map data accessors for EPICpy GUI visualization
+std::vector<std::vector<double>> get_endogenous_spatial_map_data(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_endogenous_spatial_map_data();
+}
+
+std::vector<std::vector<double>> get_combined_saliency_map_data(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_combined_saliency_map_data();
+}
+
+std::vector<std::vector<double>> get_retinal_map_data(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_retinal_map_data();
+}
+
+double get_saliency_map_angular_resolution(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_saliency_map_angular_resolution();
+}
+
+double get_saliency_map_periphery_radius(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_saliency_map_periphery_radius();
+}
+
+int get_saliency_map_size(const Model& model)
+{
+    return model.get_human_ptr()->get_Eye_processor_ptr()->get_saliency_map_size();
 }
 
 
@@ -760,7 +792,14 @@ PYBIND11_MODULE(epiclib, m)
         .def("get_random_number_generator_seed", &Model::get_random_number_generator_seed)
         .def("set_device_parameter_string", &Model::set_device_parameter_string, py::arg("str_"))
         .def("get_device_parameter_string", &Model::get_device_parameter_string)
-        .def("interconnect_device_and_human", &Model::interconnect_device_and_human);
+        .def("interconnect_device_and_human", &Model::interconnect_device_and_human)
+        // Saliency map data accessors for GUI visualization
+        .def("get_endogenous_spatial_map_data", &get_endogenous_spatial_map_data)
+        .def("get_combined_saliency_map_data", &get_combined_saliency_map_data)
+        .def("get_retinal_map_data", &get_retinal_map_data)
+        .def("get_saliency_map_angular_resolution", &get_saliency_map_angular_resolution)
+        .def("get_saliency_map_periphery_radius", &get_saliency_map_periphery_radius)
+        .def("get_saliency_map_size", &get_saliency_map_size);
 
     py::enum_<Simulation_state_e>(m, "CoordinatorState")
         .value("UNREADY", UNREADY)

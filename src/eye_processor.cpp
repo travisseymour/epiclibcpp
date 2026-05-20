@@ -1204,3 +1204,89 @@ void Eye_processor::set_attention(double a)
         attention_coeff = 0.01;
     }
 }
+
+/*
+ Saliency map data accessors for external visualization (e.g., EPICpy GUI)
+ Returns 2D vector representation of the maps for Python bindings
+ */
+
+std::vector<std::vector<double>> Eye_processor::get_endogenous_spatial_map_data() const
+{
+    std::vector<std::vector<double>> result;
+    if (!visual_saliency) {
+        return result;
+    }
+    Saliency_map* map_ptr = visual_saliency->endogenous_spatial_ptr();
+    size_t width = map_ptr->get_width();
+    size_t height = map_ptr->get_height();
+    result.resize(height);
+    for (size_t y = 0; y < height; ++y) {
+        result[y].resize(width);
+        for (size_t x = 0; x < width; ++x) {
+            result[y][x] = map_ptr->get_value(x, y);
+        }
+    }
+    return result;
+}
+
+std::vector<std::vector<double>> Eye_processor::get_combined_saliency_map_data() const
+{
+    std::vector<std::vector<double>> result;
+    if (!visual_saliency) {
+        return result;
+    }
+    Saliency_map* map_ptr = visual_saliency->saliency_ptr();
+    size_t width = map_ptr->get_width();
+    size_t height = map_ptr->get_height();
+    result.resize(height);
+    for (size_t y = 0; y < height; ++y) {
+        result[y].resize(width);
+        for (size_t x = 0; x < width; ++x) {
+            result[y][x] = map_ptr->get_value(x, y);
+        }
+    }
+    return result;
+}
+
+std::vector<std::vector<double>> Eye_processor::get_retinal_map_data() const
+{
+    std::vector<std::vector<double>> result;
+    if (!visual_saliency) {
+        return result;
+    }
+    Saliency_map* map_ptr = visual_saliency->retinal_ptr();
+    size_t width = map_ptr->get_width();
+    size_t height = map_ptr->get_height();
+    result.resize(height);
+    for (size_t y = 0; y < height; ++y) {
+        result[y].resize(width);
+        for (size_t x = 0; x < width; ++x) {
+            result[y][x] = map_ptr->get_value(x, y);
+        }
+    }
+    return result;
+}
+
+double Eye_processor::get_saliency_map_angular_resolution() const
+{
+    if (!visual_saliency) {
+        return 1.0;
+    }
+    return visual_saliency->endogenous_spatial_ptr()->get_angular_resolution();
+}
+
+double Eye_processor::get_saliency_map_periphery_radius() const
+{
+    if (!visual_saliency) {
+        return 60.0;
+    }
+    return visual_saliency->endogenous_spatial_ptr()->get_periphery_radius();
+}
+
+int Eye_processor::get_saliency_map_size() const
+{
+    if (!visual_saliency) {
+        return 120;
+    }
+    return static_cast<int>(visual_saliency->endogenous_spatial_ptr()->get_width());
+}

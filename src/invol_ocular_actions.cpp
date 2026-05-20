@@ -210,6 +210,11 @@ long Invol_ocular_Saccade_action::execute(long base_time)
     return movement_completion_time + get_saccade_refractory_period().get_long_value();
 }
 
+long Invol_ocular_Saccade_action::abort(long, int)
+{
+    return 0;
+}
+
 // Smooth_moves are assumed to take no preparation time
 long Invol_ocular_Smooth_move_action::prepare(long base_time)
 {
@@ -259,4 +264,9 @@ long Invol_ocular_Smooth_move_action::execute(long base_time)
         movement_completion_time + 1, human_ptr->get_device_ptr(), obj_device_name, eye_destination));
 
     return movement_completion_time + get_smooth_move_refractory_period().get_long_value();
+}
+
+long Invol_ocular_Smooth_move_action::abort(long, int)
+{
+    return 0;
 }

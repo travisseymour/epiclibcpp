@@ -66,6 +66,7 @@ public:
     Manual_Keystroke_action(Human_processor* human_ptr_, Symbol_list_t arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol keyname;
@@ -77,6 +78,7 @@ public:
     Manual_Hold_action(Human_processor* human_ptr_, Symbol_list_t arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol keyname;
@@ -88,6 +90,7 @@ public:
     Manual_Release_action(Human_processor* human_ptr_, Symbol_list_t arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol keyname;
@@ -100,6 +103,7 @@ public:
     Manual_Punch_action(Human_processor* human_ptr_, Symbol_list_t arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol hand;

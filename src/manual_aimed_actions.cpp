@@ -220,6 +220,11 @@ long Manual_aimed_action::execute(long base_time)
     return completion_time;
 }
 
+long Manual_aimed_action::abort(long, int)
+{
+    return 0;
+}
+
 // Services for aimed movements
 
 // generate a sequence of Device_Ply_events at the Subevent_time intervals, terminating on the target

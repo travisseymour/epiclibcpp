@@ -109,6 +109,7 @@ class Ocular_Saccade_action : public Ocular_action
 public:
     long prepare(long base_time) override;
     long execute(long base_time) override;
+    long abort(long base_time, int status) override;
 
 protected:
     // Constructor is protected to prevent direct instantiation
@@ -166,6 +167,7 @@ public:
     Ocular_Mode_action(Human_processor* human_ptr_, const Symbol_list_t& arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol command;
@@ -182,6 +184,7 @@ public:
     Ocular_Look_for_action(Human_processor* human_ptr_, const Symbol_list_t& arguments, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
     virtual void finish();
 
 private:

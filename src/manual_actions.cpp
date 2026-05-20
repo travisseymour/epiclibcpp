@@ -145,6 +145,11 @@ long Manual_Keystroke_action::execute(long base_time)
     return movement_completion_time;
 }
 
+long Manual_Keystroke_action::abort(long, int)
+{
+    return 0;
+}
+
 
 Manual_Hold_action::Manual_Hold_action(Human_processor* hum_ptr, Symbol_list_t arguments, bool execute_when_prepared)
     : Manual_action(hum_ptr, execute_when_prepared)
@@ -195,6 +200,11 @@ long Manual_Hold_action::execute(long base_time)
     return movement_completion_time;
 }
 
+long Manual_Hold_action::abort(long, int)
+{
+    return 0;
+}
+
 Manual_Release_action::Manual_Release_action(Human_processor* hum_ptr, Symbol_list_t arguments,
                                              bool execute_when_prepared)
     : Manual_action(hum_ptr, execute_when_prepared)
@@ -243,6 +253,11 @@ long Manual_Release_action::execute(long base_time)
         new Device_Release_event(movement_completion_time, get_device_ptr(), keyname));
 
     return movement_completion_time;
+}
+
+long Manual_Release_action::abort(long, int)
+{
+    return 0;
 }
 
 
@@ -339,6 +354,39 @@ long Manual_Punch_action::execute(long base_time)
     //	the movement is complete at this final time
 
     return upstroke_done_time;
+}
+
+// return the time at which the successful abort occurs
+// if unsuccessful, immediately signal this
+// and send any additional messages in the meantime
+long Manual_Punch_action::abort(long base_time, int status)
+{
+    Human_processor* human_ptr = get_processor_ptr()->get_human_ptr();
+    Processor* cognitive_ptr = human_ptr->get_cognitive_ptr();
+
+    // movement description form: (Motor Manual Punch <hand> <finger> AbortSuccessful|AbortFailed)
+    Symbol_list_t movement_description;
+    movement_description.push_back(Motor_c);
+    movement_description.push_back(Manual_c);
+    movement_description.push_back(Punch_c);
+    movement_description.push_back(hand);
+    movement_description.push_back(finger);
+    if (status == 1) {
+        movement_description.push_back(AbortSuccessful_c);
+    }
+    else {
+        movement_description.push_back(AbortFailed_c);
+    }
+
+    long abort_time = 0; // the abort is really already done in Motor_processor::handle_event
+
+    // tell cog about the abort result at base_time, signal to be deleted after a delay
+    Coordinator::get_instance().schedule_event(
+        new Cognitive_Add_Clause_event(base_time, cognitive_ptr, movement_description));
+    Coordinator::get_instance().schedule_event(new Cognitive_Delete_Clause_event(
+        base_time + get_processor_ptr()->get_efferent_deletion_delay(), cognitive_ptr, movement_description));
+
+    return abort_time;
 }
 
 

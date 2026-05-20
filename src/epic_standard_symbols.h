@@ -28,6 +28,9 @@ extern const Symbol Periphery_c;
 // Standard names for motor command terms:
 extern const Symbol Perform_c;
 extern const Symbol Prepare_c;
+extern const Symbol Abort_c;
+extern const Symbol AbortFailed_c;
+extern const Symbol AbortSuccessful_c;
 extern const Symbol Manual_c;
 extern const Symbol Keystroke_c;
 extern const Symbol Hold_c;

@@ -30,6 +30,7 @@ namespace GU = Geometry_Utilities;
 #include "visual_attention_processor.h"
 
 #include <map>
+#include <vector>
 // #include <set>
 
 class Human_processor;
@@ -158,6 +159,14 @@ public:
     void insert_regional_cue(const Symbol& region);
     void cue_previous();
     void clear_spatial_map();
+
+    // saliency map data accessors for external visualization
+    std::vector<std::vector<double>> get_endogenous_spatial_map_data() const;
+    std::vector<std::vector<double>> get_combined_saliency_map_data() const;
+    std::vector<std::vector<double>> get_retinal_map_data() const;
+    double get_saliency_map_angular_resolution() const;
+    double get_saliency_map_periphery_radius() const;
+    int get_saliency_map_size() const;
 
 private:
     // state

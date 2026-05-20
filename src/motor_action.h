@@ -54,6 +54,9 @@ public:
     // base time is the current time + initiation time, fluctuation is a random multiplier
     // for the execution mechanical time
     virtual long execute(long base_time) = 0;
+    // return abort time, sending appropriate messages
+    // status: 1 = abort successful, 99 = abort failed
+    virtual long abort(long base_time, int status) = 0;
     // send any final messages needed
     virtual void finish()
     {
@@ -67,13 +70,14 @@ public:
         execute_when_prepared = execute_when_prepared_;
     }
 
-    /*
-        Symbol_list_t get_arguments() const
-            {return arguments;}
-
-        Symbol_list_t set_arguments(const Symbol_list_t& arguments_)
-            {arguments = arguments_;}
-    */
+    Symbol_list_t get_arguments() const
+    {
+        return arguments;
+    }
+    void set_arguments(const Symbol_list_t& arguments_)
+    {
+        arguments = arguments_;
+    }
 
 protected:
     Human_processor* const human_ptr; // const so subclasses can't modify it
@@ -89,6 +93,9 @@ private:
     // true if this action should be executed as soon as possible after preparation,
     // false if it must wait for a perform-previous command
     bool execute_when_prepared;
+
+    // the original arguments list for this action (used for abort matching)
+    Symbol_list_t arguments;
 
     Motor_action(const Motor_action&); // no copy or assignment
     Motor_action& operator=(const Motor_action&);

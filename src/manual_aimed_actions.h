@@ -43,6 +43,7 @@ public:
 
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 protected:
     Eye_processor* eye_ptr;                                   // pointer to the connected eye

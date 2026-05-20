@@ -58,6 +58,7 @@ public:
     Vocal_Speak_action(Human_processor* human_ptr_, Symbol_list_t arguments, bool overt_, bool execute_when_prepared);
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 
 private:
     Symbol utterance;         // the string of words to be said

@@ -24,6 +24,7 @@ The busy booleans are there only to govern whether a signal should be sent becau
 #include "cognitive_event_types.h"
 #include "motor_action.h"
 #include "assert_throw.h"
+#include "symbol_utilities.h"
 
 #include <iostream>
 #include <typeinfo>
@@ -110,9 +111,150 @@ void Motor_processor::accept_event(const Motor_event* event_ptr)
 
 void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
 {
-    // if preparation is busy, something has gone wrong - a Jam.
-    if (preparing_action)
-        throw Motor_processor_error(this, "jammed when new command started");
+    // Deal with special case of Abort action type
+    Symbol action_type;
+    Symbol_list_t new_arguments;
+    Symbol_list_t old_arguments;
+    new_arguments = event_ptr->action->get_arguments();
+    if (static_cast<int>(new_arguments.size()) >= 3) {
+        new_arguments.pop_front();
+        new_arguments.pop_front(); // removes 'Send_to_motor' and the modality
+        action_type = new_arguments.front();
+        new_arguments.pop_front(); // pop one more to get just style and features
+    }
+    else {
+        action_type = Symbol("nada");
+    }
+
+    long base_time = get_time();
+    if (action_type == Abort_c) {
+        if (get_trace() && Trace_out)
+            Trace_out << processor_info() << "MOTOR ABORT: Considering Abort..." << endl;
+
+        if (preparing_action) {
+            old_arguments = preparing_action->get_arguments();
+            if (static_cast<int>(old_arguments.size()) >= 3) {
+                old_arguments.pop_front();
+                old_arguments.pop_front();
+                old_arguments.pop_front(); // removes 'Send_to_motor', the modality, and 'Perform'/'Prepare'
+            }
+            if (old_arguments == new_arguments) {
+                // we've got the right preparation
+                if (get_trace() && Trace_out) {
+                    Trace_out << processor_info() << "MOTOR ABORT: Referenced action was being prepared..." << endl;
+                    Trace_out << processor_info() << "MOTOR ABORT: preparing ["
+                              << concatenate_to_string(old_arguments) << "]-> new ["
+                              << concatenate_to_string(new_arguments) << "]" << endl;
+                }
+                preparing_action.reset();
+                event_ptr->action->abort(base_time, 1);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info() << "MOTOR ABORT: Abort Successful." << endl;
+            }
+            else {
+                // current prep is not one involved in abort request
+                event_ptr->action->abort(base_time, 99);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info()
+                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                              << endl;
+            }
+        }
+        else if (!executing_action && ready_action && ready_action->get_execute_when_prepared()) {
+            Symbol_list_t ready_arguments = ready_action->get_arguments();
+            if (static_cast<int>(ready_arguments.size()) >= 3) {
+                ready_arguments.pop_front();
+                ready_arguments.pop_front();
+                ready_arguments.pop_front(); // removes 'Send_to_motor', the modality, and 'Perform'/'Prepare'
+            }
+            if (ready_arguments == new_arguments) {
+                // we've got the right preparation
+                if (get_trace() && Trace_out) {
+                    Trace_out << processor_info()
+                              << "MOTOR ABORT: Referenced action was already prepared and awaiting deferred execute..."
+                              << endl;
+                    Trace_out << processor_info() << "MOTOR ABORT: ready_action ["
+                              << concatenate_to_string(ready_arguments) << "]-> new_action ["
+                              << concatenate_to_string(new_arguments) << "]" << endl;
+                }
+                ready_action.reset();
+                event_ptr->action->abort(base_time, 1);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info() << "MOTOR ABORT: Abort Successful." << endl;
+            }
+            else {
+                // current prep is not one involved in abort request
+                event_ptr->action->abort(base_time, 99);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info()
+                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                              << endl;
+            }
+        }
+        else if (!executing_action && ready_action && !ready_action->get_execute_when_prepared()) {
+            Symbol_list_t ready_arguments = ready_action->get_arguments();
+            if (static_cast<int>(ready_arguments.size()) >= 3) {
+                ready_arguments.pop_front();
+                ready_arguments.pop_front();
+                ready_arguments.pop_front(); // removes 'Send_to_motor', the modality, and 'Perform'/'Prepare'
+            }
+            if (ready_arguments == new_arguments) {
+                // we've got the right preparation
+                if (get_trace() && Trace_out) {
+                    Trace_out << processor_info()
+                              << "MOTOR ABORT: Referenced action was already prepared (NOT awaiting deferred execute)..."
+                              << endl;
+                    Trace_out << processor_info() << "MOTOR ABORT: ready_action ["
+                              << concatenate_to_string(ready_arguments) << "]-> new_action ["
+                              << concatenate_to_string(new_arguments) << "]" << endl;
+                }
+                ready_action.reset();
+                event_ptr->action->abort(base_time, 1);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info() << "MOTOR ABORT: Abort Successful (though unnecessary)." << endl;
+            }
+            else {
+                // current prep is not one involved in abort request
+                event_ptr->action->abort(base_time, 99);
+                if (get_trace() && Trace_out)
+                    Trace_out << processor_info()
+                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                              << endl;
+            }
+        }
+        else {
+            // if nothing being prepared, then the abort must be a failure
+            event_ptr->action->abort(base_time, 99);
+            if (get_trace() && Trace_out)
+                Trace_out << processor_info()
+                          << "MOTOR ABORT: Abort Failed (nothing appears to be preparing/prepared)." << endl;
+        }
+
+        update_processor_state_signals();
+        return;
+    }
+
+    // Normal (non-abort) command handling
+    // if preparation is busy with a different action, something has gone wrong - a Jam.
+    if (preparing_action) {
+        old_arguments = preparing_action->get_arguments();
+        if (static_cast<int>(old_arguments.size()) >= 3) {
+            old_arguments.pop_front();
+            old_arguments.pop_front();
+            old_arguments.pop_front(); // removes 'Send_to_motor', the modality, and 'Perform'/'Prepare'
+        }
+        if (old_arguments == new_arguments) {
+            if (get_trace() && Trace_out)
+                Trace_out << processor_info() << "MOTOR: not jammed because commands are same: OLD=["
+                          << concatenate_to_string(old_arguments) << "], NEW=["
+                          << concatenate_to_string(new_arguments) << "]" << endl;
+        }
+        else {
+            throw Motor_processor_error(this, "MOTOR: JAMMED when new [different] command started: OLD=["
+                                        + concatenate_to_string(old_arguments) + "], NEW=["
+                                        + concatenate_to_string(new_arguments) + "]");
+        }
+    }
     preparing_action = event_ptr->action;
     if (get_trace() && Trace_out) {
         Trace_out << processor_info() << "Preparation started for " << typeid(*preparing_action).name();
@@ -120,8 +262,8 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
             Trace_out << ", execution deferred";
         Trace_out << endl;
     }
-    // get preparation time
-    long base_time = get_time();
+    // get preparation time (base_time already declared above)
+    base_time = get_time();
     long preparation_time = preparing_action->prepare(base_time);
     // if no time required for preparation, go directly to setup of prepared action
     if (preparation_time == base_time) {

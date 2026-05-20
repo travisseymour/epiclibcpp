@@ -111,6 +111,7 @@ public:
     }
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 };
 
 // Specify a smooth movement to the object
@@ -123,6 +124,7 @@ public:
     }
     virtual long prepare(long base_time);
     virtual long execute(long base_time);
+    virtual long abort(long base_time, int status);
 };
 
 
