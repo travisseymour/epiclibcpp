@@ -1,16 +1,20 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --python 3.12
+# /// script
+# requires-python = ">=3.12"
+# ///
 """
 Test epiclibcpp from a locally built wheel.
 
 Usage:
-  1. Run ./build_local.sh first to build the wheel
+  1. Run ./build_local.py (or ./build_local.sh) first to build the wheel
   2. Run this script: ./run_tests/run_test_from_local_build.py
+
+uv handles Python version matching and environment creation automatically.
 """
 
 import subprocess
 import sys
 import tempfile
-import shutil
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).parent
@@ -30,7 +34,7 @@ DEPENDENCIES = [
     "plumbum",
 ]
 
-TEST_CODE = '''
+TEST_CODE = r'''
 import math
 import sys
 import random
@@ -41,7 +45,6 @@ from epiclibcpp.epiclib import Symbol, Speech_word, Model, Device_base
 from epiclibcpp.epiclib.geometric_utilities import Point
 from epiclibcpp.epiclib import (
     Output_tee,
-    Device_exception,
     Coordinator,
     geometric_utilities as gu
 )
@@ -59,7 +62,7 @@ from epiclibcpp.epiclib import Coordinator
 
 
 class StreamWriter:
-    def __init__(self, prefix: str = '', postfix: str = '', end: str = '\\n', stream=None):
+    def __init__(self, prefix: str = '', postfix: str = '', end: str = '\n', stream=None):
         self.prefix = prefix
         self.postfix = postfix
         self.end = end
@@ -69,7 +72,7 @@ class StreamWriter:
     def write(self, text, /):
         self._buf += text
         while True:
-            i = self._buf.find('\\n')
+            i = self._buf.find('\n')
             if i < 0:
                 break
             line, self._buf = self._buf[:i], self._buf[i+1:]
@@ -86,7 +89,7 @@ class StreamWriter:
 
 
 class ConsoleWriter:
-    def __init__(self, prefix: str = '', postfix: str = '', end: str = '\\n', console: Console | None = None):
+    def __init__(self, prefix: str = '', postfix: str = '', end: str = '\n', console: Console | None = None):
         self.prefix = prefix
         self.postfix = postfix
         self.end = end
@@ -96,7 +99,7 @@ class ConsoleWriter:
     def write(self, text, /):
         self._buf += text
         while True:
-            i = self._buf.find('\\n')
+            i = self._buf.find('\n')
             if i < 0:
                 break
             line, self._buf = self._buf[:i], self._buf[i+1:]
@@ -126,11 +129,11 @@ class ConsoleWriter:
     def close(self):
         self.flush()
 
-print('\\n\\n--------------------------------------------------')
+print('\n\n--------------------------------------------------')
 print('--------------------------------------------------')
 print('OUTPUT OF run_test_from_local_build.py')
 print('--------------------------------------------------')
-print('--------------------------------------------------\\n')
+print('--------------------------------------------------\n')
 
 normal_out_writer = ConsoleWriter(prefix='[yellow1]', postfix='[/yellow1]')
 trace_out_writer = ConsoleWriter(prefix='[medium_purple3]', postfix='[/medium_purple3]')
@@ -142,10 +145,10 @@ Trace_out.add_py_stream(trace_out_writer)
 PPS_out.add_py_stream(pps_out_writer)
 Exception_out.add_py_stream(sys.stderr)
 
-Normal_out(f'Writing PI to Normal_out: {str(math.pi)=}\\n')
-Debug_out(f'Writing PI to Debug_out: {str(math.pi)=}\\n')
-PPS_out(f'Writing PI to PPS_out: {str(math.pi)=}\\n')
-Trace_out(f'Writing PI to Trace_out: {str(math.pi)=}\\n')
+Normal_out(f'Writing PI to Normal_out: {str(math.pi)=}\n')
+Debug_out(f'Writing PI to Debug_out: {str(math.pi)=}\n')
+PPS_out(f'Writing PI to PPS_out: {str(math.pi)=}\n')
+Trace_out(f'Writing PI to Trace_out: {str(math.pi)=}\n')
 
 print('--Normal_out--')
 print(f'{Normal_out=}')
@@ -187,13 +190,9 @@ print('--Model--')
 model = Model(device)
 print(f'{model.get_time()=}')
 
-print('\\n--Parameters--')
+print('\n--Parameters--')
 
-print('\\n--Exceptions--')
-
-exc1 = Device_exception()
-exc2 = Device_exception("Some Problem!")
-Device_exception("This is it!")
+print('\n--Exceptions--')
 
 print('--Coordinator--')
 print(f'{Coordinator.get_time()=}')
@@ -252,7 +251,7 @@ print(f'{vb1=}')
 
 Normal_out.add_view(vb1)
 print(f'Normal_out enabled = {bool(Normal_out)}')
-Normal_out("\\n\\nHello There!\\n\\n")
+Normal_out("\n\nHello There!\n\n")
 
 print('--Visual_encoder_base--')
 
@@ -359,9 +358,9 @@ print('--Coordinator--')
 COORDINATOR = Coordinator.get_instance()
 print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
 
-Debug_out('@@@ This Should Not Print Anything BC It Has no sinks!\\n')
+Debug_out('@@@ This Should Not Print Anything BC It Has no sinks!\n')
 
-Exception_out('~~DONE~~\\n')
+Exception_out('~~DONE~~\n')
 
 for ot in (Normal_out, Trace_out, PPS_out, Exception_out, Debug_out):
     ot.py_flush()
@@ -378,56 +377,36 @@ def main():
     wheels = list(DIST_DIR.glob("*.whl"))
     if not wheels:
         print(f"Error: No wheel found in {DIST_DIR}")
-        print("Run ./build_local.sh first to build the wheel.")
+        print("Run ./build_local.py first to build the wheel.")
         sys.exit(1)
 
-    wheel = wheels[0]
-    if len(wheels) > 1:
-        # Pick the most recently modified wheel
-        wheel = max(wheels, key=lambda p: p.stat().st_mtime)
-        print(f"Multiple wheels found, using most recent: {wheel.name}")
-    else:
-        print(f"Using wheel: {wheel.name}")
+    wheel = max(wheels, key=lambda p: p.stat().st_mtime)
+    print(f"Using wheel: {wheel.name}")
 
-    # Create a temporary virtualenv
-    with tempfile.TemporaryDirectory() as tmpdir:
-        venv_dir = Path(tmpdir) / "venv"
-        print(f"\nCreating temporary venv...")
+    # Write test code to a temp file (uv run needs a file, not -c with --with)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+        f.write(TEST_CODE)
+        test_file = f.name
 
-        subprocess.run([sys.executable, "-m", "venv", str(venv_dir)], check=True)
+    # Build the uv run command
+    # --python 3.12 matches the shebang / build_local.py
+    # --no-project avoids picking up pyproject.toml from the epiclibcpp tree
+    cmd = ["uv", "run", "--no-project", "--python", "3.12"]
+    cmd += ["--with", str(wheel)]
+    for dep in DEPENDENCIES:
+        cmd += ["--with", dep]
+    cmd.append(test_file)
 
-        # Get the pip/python paths
-        if sys.platform == "win32":
-            pip = venv_dir / "Scripts" / "pip"
-            python = venv_dir / "Scripts" / "python"
-        else:
-            pip = venv_dir / "bin" / "pip"
-            python = venv_dir / "bin" / "python"
+    print("\n" + "=" * 50)
+    print("Running tests...")
+    print("=" * 50 + "\n")
 
-        # Install dependencies
-        print("Installing dependencies...")
-        subprocess.run(
-            [str(pip), "install", "--quiet"] + DEPENDENCIES,
-            check=True
-        )
+    result = subprocess.run(cmd)
 
-        # Install the local wheel
-        print(f"Installing local wheel...")
-        subprocess.run(
-            [str(pip), "install", "--quiet", str(wheel)],
-            check=True
-        )
+    # Clean up
+    Path(test_file).unlink(missing_ok=True)
 
-        # Run the test
-        print("\n" + "=" * 50)
-        print("Running tests...")
-        print("=" * 50 + "\n")
-
-        result = subprocess.run(
-            [str(python), "-c", TEST_CODE],
-        )
-
-        sys.exit(result.returncode)
+    sys.exit(result.returncode)
 
 
 if __name__ == "__main__":

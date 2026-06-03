@@ -23,7 +23,7 @@ Build and test locally before pushing anywhere:
 1. Build the wheel:
 
 ```bash
-./build_local.sh
+./build_local.py
 ```
 
 2. Test the local build:

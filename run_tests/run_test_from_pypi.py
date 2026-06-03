@@ -1,6 +1,6 @@
-#!/usr/bin/env -S uv run
+#!/usr/bin/env -S uv run --python 3.12
 # /// script
-# requires-python = "==3.11.*"
+# requires-python = ">=3.12"
 # dependencies = [
 #   "loguru",
 #   "plum-dispatch",
@@ -27,7 +27,6 @@ from epiclibcpp.epiclib import Symbol, Speech_word, Model, Device_base
 from epiclibcpp.epiclib.geometric_utilities import Point
 from epiclibcpp.epiclib import (
     Output_tee,
-    Device_exception,
     Coordinator,
     geometric_utilities as gu
 )
@@ -222,10 +221,6 @@ print('\n--Parameters--')
 # model.describe_parameters()
 
 print('\n--Exceptions--')
-
-exc1 = Device_exception()
-exc2 = Device_exception("Some Problem!")
-Device_exception("This is it!")
 
 print('--Coordinator--')
 

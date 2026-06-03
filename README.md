@@ -25,7 +25,7 @@ python -m pip install epiclibcpp
 
 ### Development
 
-- Pushes to `main` automatically build wheels for Linux, macOS (Intel + ARM), and Windows for Python 3.10–3.13, and publish them to **TestPyPI**.
+- Pushes to `main` automatically build wheels for Linux, macOS (Intel + ARM), and Windows for Python 3.10–3.14, and publish them to **TestPyPI**.
 - Git tags like `v0.1.0` trigger a release build and upload wheels to **PyPI**.
 
 e.g.:

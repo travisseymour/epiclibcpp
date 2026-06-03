@@ -142,9 +142,8 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
                 // we've got the right preparation
                 if (get_trace() && Trace_out) {
                     Trace_out << processor_info() << "MOTOR ABORT: Referenced action was being prepared..." << endl;
-                    Trace_out << processor_info() << "MOTOR ABORT: preparing ["
-                              << concatenate_to_string(old_arguments) << "]-> new ["
-                              << concatenate_to_string(new_arguments) << "]" << endl;
+                    Trace_out << processor_info() << "MOTOR ABORT: preparing [" << concatenate_to_string(old_arguments)
+                              << "]-> new [" << concatenate_to_string(new_arguments) << "]" << endl;
                 }
                 preparing_action.reset();
                 event_ptr->action->abort(base_time, 1);
@@ -155,9 +154,10 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
                 // current prep is not one involved in abort request
                 event_ptr->action->abort(base_time, 99);
                 if (get_trace() && Trace_out)
-                    Trace_out << processor_info()
-                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
-                              << endl;
+                    Trace_out
+                        << processor_info()
+                        << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                        << endl;
             }
         }
         else if (!executing_action && ready_action && ready_action->get_execute_when_prepared()) {
@@ -186,9 +186,10 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
                 // current prep is not one involved in abort request
                 event_ptr->action->abort(base_time, 99);
                 if (get_trace() && Trace_out)
-                    Trace_out << processor_info()
-                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
-                              << endl;
+                    Trace_out
+                        << processor_info()
+                        << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                        << endl;
             }
         }
         else if (!executing_action && ready_action && !ready_action->get_execute_when_prepared()) {
@@ -201,9 +202,10 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
             if (ready_arguments == new_arguments) {
                 // we've got the right preparation
                 if (get_trace() && Trace_out) {
-                    Trace_out << processor_info()
-                              << "MOTOR ABORT: Referenced action was already prepared (NOT awaiting deferred execute)..."
-                              << endl;
+                    Trace_out
+                        << processor_info()
+                        << "MOTOR ABORT: Referenced action was already prepared (NOT awaiting deferred execute)..."
+                        << endl;
                     Trace_out << processor_info() << "MOTOR ABORT: ready_action ["
                               << concatenate_to_string(ready_arguments) << "]-> new_action ["
                               << concatenate_to_string(new_arguments) << "]" << endl;
@@ -217,17 +219,18 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
                 // current prep is not one involved in abort request
                 event_ptr->action->abort(base_time, 99);
                 if (get_trace() && Trace_out)
-                    Trace_out << processor_info()
-                              << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
-                              << endl;
+                    Trace_out
+                        << processor_info()
+                        << "MOTOR ABORT: Abort Failed (pending preparation is not one specified in abort request)."
+                        << endl;
             }
         }
         else {
             // if nothing being prepared, then the abort must be a failure
             event_ptr->action->abort(base_time, 99);
             if (get_trace() && Trace_out)
-                Trace_out << processor_info()
-                          << "MOTOR ABORT: Abort Failed (nothing appears to be preparing/prepared)." << endl;
+                Trace_out << processor_info() << "MOTOR ABORT: Abort Failed (nothing appears to be preparing/prepared)."
+                          << endl;
         }
 
         update_processor_state_signals();
@@ -246,13 +249,13 @@ void Motor_processor::handle_event(const Motor_Command_Action_event* event_ptr)
         if (old_arguments == new_arguments) {
             if (get_trace() && Trace_out)
                 Trace_out << processor_info() << "MOTOR: not jammed because commands are same: OLD=["
-                          << concatenate_to_string(old_arguments) << "], NEW=["
-                          << concatenate_to_string(new_arguments) << "]" << endl;
+                          << concatenate_to_string(old_arguments) << "], NEW=[" << concatenate_to_string(new_arguments)
+                          << "]" << endl;
         }
         else {
-            throw Motor_processor_error(this, "MOTOR: JAMMED when new [different] command started: OLD=["
-                                        + concatenate_to_string(old_arguments) + "], NEW=["
-                                        + concatenate_to_string(new_arguments) + "]");
+            throw Motor_processor_error(this, "MOTOR: JAMMED when new [different] command started: OLD=[" +
+                                                  concatenate_to_string(old_arguments) + "], NEW=[" +
+                                                  concatenate_to_string(new_arguments) + "]");
         }
     }
     preparing_action = event_ptr->action;

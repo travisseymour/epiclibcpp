@@ -138,7 +138,7 @@ void Matrix::to_gaussian(int x_mean, int y_mean, double sigma)
     for (size_t x = 0; x < width; ++x)
         for (size_t y = 0; y < height; ++y) {
             elements[x][y] = exp(-0.5 * (pow((static_cast<int>(x) - x_mean) / sigma, 2.0) +
-                             pow((static_cast<int>(y) - y_mean) / sigma, 2.0))) /
+                                         pow((static_cast<int>(y) - y_mean) / sigma, 2.0))) /
                              (2 * M_PI * sigma * sigma);
 
             if (elements[x][y] > max)
@@ -210,18 +210,33 @@ void Matrix::to_multivariable_sigmoid(double upper_asymptote, int quadrant)
 
     double x_sign, y_sign;
     switch (quadrant) {
-    case 1: x_sign = -8.0; y_sign = -8.0; break;
-    case 2: x_sign =  8.0; y_sign = -8.0; break;
-    case 3: x_sign =  8.0; y_sign =  8.0; break;
-    case 4: x_sign = -8.0; y_sign =  8.0; break;
-    default: return;
+    case 1:
+        x_sign = -8.0;
+        y_sign = -8.0;
+        break;
+    case 2:
+        x_sign = 8.0;
+        y_sign = -8.0;
+        break;
+    case 3:
+        x_sign = 8.0;
+        y_sign = 8.0;
+        break;
+    case 4:
+        x_sign = -8.0;
+        y_sign = 8.0;
+        break;
+    default:
+        return;
     }
 
     for (size_t x = 0; x < width; ++x)
         for (size_t y = 0; y < height; ++y) {
             elements[x][y] =
-                half_asymptote / (1.0 + exp(x_sign / static_cast<double>(width) * (static_cast<double>(x) - x_origin))) +
-                half_asymptote / (1.0 + exp(y_sign / static_cast<double>(height) * (static_cast<double>(y) - y_origin)));
+                half_asymptote /
+                    (1.0 + exp(x_sign / static_cast<double>(width) * (static_cast<double>(x) - x_origin))) +
+                half_asymptote /
+                    (1.0 + exp(y_sign / static_cast<double>(height) * (static_cast<double>(y) - y_origin)));
             if (elements[x][y] > max)
                 max = elements[x][y];
         }

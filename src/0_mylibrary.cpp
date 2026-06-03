@@ -59,9 +59,6 @@ using namespace Geometry_Utilities;
 using std::string;
 using std::to_string;
 
-PYBIND11_MAKE_OPAQUE(std::vector<Parameter_specification>)
-PYBIND11_MAKE_OPAQUE(std::vector<Symbol>)
-
 extern Output_tee Normal_out;
 extern Output_tee Trace_out;
 extern Output_tee PPS_out;
@@ -457,30 +454,21 @@ public:
 PYBIND11_MODULE(epiclib, m)
 {
     m.doc() = "EPICLib bindings for Python - Travis Seymour, PhD";
-    // py::bind_vector<std::vector<Parameter_specification>>(m, "Parameter_specification_list_t");
-    // py::bind_vector<std::vector<Symbol>>(m, "Symbol_list_t");
 
     // ----- other ---------
     m.def("describe_parameters_u", &describe_parameters_u,
           py::doc("access to describe_parameters() without referencing a Human pointer"));
 
-    m.def("set_visual_encoder_ptr", &set_visual_encoder_ptr,
-          py::doc("access to set_visual_encoder_ptr() without referencing a Human pointer"));
+    m.def("set_visual_encoder_ptr", &set_visual_encoder_ptr, py::arg("model"), py::arg("encoder"),
+          py::keep_alive<1, 2>(), py::doc("access to set_visual_encoder_ptr() without referencing a Human pointer"));
 
-    m.def("set_auditory_encoder_ptr", &set_auditory_encoder_ptr,
-          py::doc("access to set_auditory_encoder_ptr() without referencing a Human pointer"));
+    m.def("set_auditory_encoder_ptr", &set_auditory_encoder_ptr, py::arg("model"), py::arg("encoder"),
+          py::keep_alive<1, 2>(), py::doc("access to set_auditory_encoder_ptr() without referencing a Human pointer"));
     //---------------------
 
 
-    py::class_<Device_exception>(m, "Device_exception")
-        .def(py::init())
-        .def(py::init<const std::string&>(), py::arg("msg_"))
-        .def(py::init<const Device_base*, const std::string&>(), py::arg("proc_ptr"), py::arg("msg_"));
-
-    py::class_<Epic_exception>(m, "Epic_exception")
-        .def(py::init())
-        .def(py::init<const std::string&>(), py::arg("msg_"))
-        .def(py::init<Processor*, const std::string&>(), py::arg("proc_ptr"), py::arg("msg_"));
+    auto epic_exc = py::register_exception<Epic_exception>(m, "EpicException");
+    py::register_exception<Device_exception>(m, "DeviceException", epic_exc);
 
     m.def("raise_device_exception", [](const std::string& str) { throw Device_exception(str); });
 
@@ -519,6 +507,16 @@ PYBIND11_MODULE(epiclib, m)
     auto pps_globals = m.def_submodule("pps_globals", "Global PPS Output_tee instance");
     pps_globals.attr("PPS_out") = py::cast(&PPS_out, py::return_value_policy::reference);
 
+
+    py::class_<Parameter_specification>(m, "Parameter_specification")
+        .def(py::init<>())
+        .def_readwrite("processor_name", &Parameter_specification::processor_name)
+        .def_readwrite("parameter_name", &Parameter_specification::parameter_name)
+        .def_readwrite("specification", &Parameter_specification::specification)
+        .def("__repr__", [](const Parameter_specification& ps) {
+            return "Parameter_specification('" + ps.processor_name + "', '" + ps.parameter_name + "', '" +
+                   ps.specification + "')";
+        });
 
     py::class_<Clause>(m, "Clause")
         .def(py::init())
@@ -577,10 +575,33 @@ PYBIND11_MODULE(epiclib, m)
         .def("__ge__", [](const Symbol& lhs, double d) { return lhs >= d; })
 
         .def("swap", &Symbol::swap)
+        .def("__hash__", [](const Symbol& s) { return std::hash<std::string>{}(s.str()); })
+        .def("__str__",
+             [](const Symbol& sw) {
+                 ostringstream os;
+                 if (sw.has_string_value()) {
+                     os << sw.c_str();
+                 }
+                 else if (sw.has_single_numeric_value()) {
+                     os << sw.get_numeric_value();
+                 }
+                 else if (sw.has_Point_numeric_value()) {
+                     Point p = sw.get_Point();
+                     os << "Point(" << p.x << ", " << p.y << ")";
+                 }
+                 else if (sw.has_multiple_numeric_value()) {
+                     os << sw.get_Point_vector();
+                 }
+                 else {
+                     os << "<empty>";
+                 }
+                 return os.str();
+             })
         .def("__repr__", [](const Symbol& sw) {
             ostringstream os;
+            os << "Symbol(";
             if (sw.has_string_value()) {
-                os << sw.c_str();
+                os << "'" << sw.c_str() << "'";
             }
             else if (sw.has_single_numeric_value()) {
                 os << sw.get_numeric_value();
@@ -592,10 +613,7 @@ PYBIND11_MODULE(epiclib, m)
             else if (sw.has_multiple_numeric_value()) {
                 os << sw.get_Point_vector();
             }
-            else {
-                os << "<empty>";
-            }
-
+            os << ")";
             return os.str();
         });
 
@@ -709,16 +727,18 @@ PYBIND11_MODULE(epiclib, m)
         .def("write", &Device_base::write, py::arg("msg"));
 
     py::class_<Model, std::unique_ptr<Model>>(m, "Model")
-        .def(py::init<Device_base*>(), py::arg("device_ptr_"))
+        .def(py::init<Device_base*>(), py::arg("device_ptr_"), py::keep_alive<1, 2>())
         .def("get_human_ptr", &Model::get_human_ptr)
         .def("get_device_ptr", &Model::get_device_ptr)
         .def("set_device_ptr", &Model::set_device_ptr, py::arg("device_ptr_"))
         .def("get_device_processor_ptr", &Model::get_device_processor_ptr)
         .def("connect_device_to_human", &Model::connect_device_to_human, py::arg("dev_base_ptr"))
         .def("get_visual_encoder_ptr", &Model::get_visual_encoder_ptr)
-        .def("set_visual_encoder_ptr", &Model::set_visual_encoder_ptr, py::arg("visual_encoder_ptr"))
+        .def("set_visual_encoder_ptr", &Model::set_visual_encoder_ptr, py::arg("visual_encoder_ptr"),
+             py::keep_alive<1, 2>())
         .def("get_auditory_encoder_ptr", &Model::get_auditory_encoder_ptr)
-        .def("set_auditory_encoder_ptr", &Model::set_auditory_encoder_ptr, py::arg("auditory_encoder_ptr"))
+        .def("set_auditory_encoder_ptr", &Model::set_auditory_encoder_ptr, py::arg("auditory_encoder_ptr"),
+             py::keep_alive<1, 2>())
         .def("compile", &Model::compile)
         .def("initialize", &Model::initialize)
         .def("run_time", &Model::run_time, py::arg("duration"))
@@ -730,19 +750,23 @@ PYBIND11_MODULE(epiclib, m)
         .def("get_compiled", &Model::get_compiled)
         .def("get_initialized", &Model::get_initialized)
         .def("get_running", &Model::get_running)
-        .def("add_visual_physical_view", &Model::add_visual_physical_view, py::arg("view_ptr"))
-        .def("add_visual_sensory_view", &Model::add_visual_sensory_view, py::arg("view_ptr"))
-        .def("add_visual_perceptual_view", &Model::add_visual_perceptual_view, py::arg("view_ptr"))
+        .def("add_visual_physical_view", &Model::add_visual_physical_view, py::arg("view_ptr"), py::keep_alive<1, 2>())
+        .def("add_visual_sensory_view", &Model::add_visual_sensory_view, py::arg("view_ptr"), py::keep_alive<1, 2>())
+        .def("add_visual_perceptual_view", &Model::add_visual_perceptual_view, py::arg("view_ptr"),
+             py::keep_alive<1, 2>())
         .def("remove_visual_physical_view", &Model::remove_visual_physical_view, py::arg("view_ptr"))
         .def("remove_visual_sensory_view", &Model::remove_visual_sensory_view, py::arg("view_ptr"))
         .def("remove_visual_perceptual_view", &Model::remove_visual_perceptual_view, py::arg("view_ptr"))
-        .def("add_auditory_physical_view", &Model::add_auditory_physical_view, py::arg("view_ptr"))
-        .def("add_auditory_sensory_view", &Model::add_auditory_sensory_view, py::arg("view_ptr"))
-        .def("add_auditory_perceptual_view", &Model::add_auditory_perceptual_view, py::arg("view_ptr"))
+        .def("add_auditory_physical_view", &Model::add_auditory_physical_view, py::arg("view_ptr"),
+             py::keep_alive<1, 2>())
+        .def("add_auditory_sensory_view", &Model::add_auditory_sensory_view, py::arg("view_ptr"),
+             py::keep_alive<1, 2>())
+        .def("add_auditory_perceptual_view", &Model::add_auditory_perceptual_view, py::arg("view_ptr"),
+             py::keep_alive<1, 2>())
         .def("remove_auditory_physical_view", &Model::remove_auditory_physical_view, py::arg("view_ptr"))
         .def("remove_auditory_sensory_view", &Model::remove_auditory_sensory_view, py::arg("view_ptr"))
         .def("remove_auditory_perceptual_view", &Model::remove_auditory_perceptual_view, py::arg("view_ptr"))
-        .def("add_view", &Model::add_view, py::arg("view_ptr"))
+        .def("add_view", &Model::add_view, py::arg("view_ptr"), py::keep_alive<1, 2>())
         .def("remove_view", &Model::remove_view, py::arg("view_ptr"))
         .def("remove_all_views", &Model::remove_all_views)
         .def("clear_all_views", &Model::clear_all_views)
@@ -816,7 +840,7 @@ PYBIND11_MODULE(epiclib, m)
     //       For now, using Coordinator directly, but if that don't work, may need to
     //       create an object above that serves as an interface and expose that instead.
     //       or this: https://stackoverflow.com/questions/41814652/how-to-wrap-a-singleton-class-using-pybind11
-    py::class_<Coordinator, std::unique_ptr<Coordinator>>(m, "Coordinator")
+    py::class_<Coordinator, std::unique_ptr<Coordinator, py::nodelete>>(m, "Coordinator")
         .def_property_readonly("state", &Coordinator::get_state)
         .def_static("get_instance", &Coordinator::get_instance, py::return_value_policy::reference)
         .def_static("get_time", &Coordinator::get_time)
@@ -860,6 +884,9 @@ PYBIND11_MODULE(epiclib, m)
         .def_property("x", &Point::get_x, &Point::set_x)
         .def_property("y", &Point::get_y, &Point::set_y)
 
+        .def("__eq__", [](const Point& lhs, const Point& rhs) { return lhs == rhs; })
+        .def("__ne__", [](const Point& lhs, const Point& rhs) { return lhs != rhs; })
+
         .def("__add__", [](const Point& p, const Cartesian_vector& cv) { return p + cv; })
         .def("__add__", [](const Point& p, const Polar_vector& pv) { return p + pv; })
         .def("__sub__", [](const Point& p1, const Point& p2) { return p1 - p2; })
@@ -874,6 +901,10 @@ PYBIND11_MODULE(epiclib, m)
         .def(py::init<double, double>(), py::arg("in_h") = 0.0, py::arg("in_v") = 0.0)
         .def_readwrite("h", &Geometry_Utilities::Size::h)
         .def_readwrite("v", &Geometry_Utilities::Size::v)
+        .def("__eq__",
+             [](const Geometry_Utilities::Size& lhs, const Geometry_Utilities::Size& rhs) { return lhs == rhs; })
+        .def("__ne__",
+             [](const Geometry_Utilities::Size& lhs, const Geometry_Utilities::Size& rhs) { return lhs != rhs; })
         .def("__repr__", [](const Geometry_Utilities::Size& sz) {
             std::ostringstream os;
             os << "Size(" << sz.h << ", " << sz.v << ")";
@@ -890,8 +921,9 @@ PYBIND11_MODULE(epiclib, m)
         .def("__add__", [](const Cartesian_vector& cv, const Point p) { return cv + p; })
         .def("__add__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2) { return cv1 + cv2; })
         .def("__sub__", [](const Cartesian_vector& cv1, const Cartesian_vector& cv2) { return cv1 - cv2; })
-        .def("__div__", [](const Cartesian_vector& cv, double d) { return cv / d; })
+        .def("__truediv__", [](const Cartesian_vector& cv, double d) { return cv / d; })
         .def("__mul__", [](const Cartesian_vector& cv, double d) { return cv * d; })
+        .def("__rmul__", [](const Cartesian_vector& cv, double d) { return cv * d; })
 
         .def("__repr__", [](const Geometry_Utilities::Cartesian_vector& cv) {
             std::ostringstream os;
@@ -907,8 +939,9 @@ PYBIND11_MODULE(epiclib, m)
         .def_readwrite("theta", &Geometry_Utilities::Polar_vector::theta)
 
         .def("__add__", [](const Polar_vector& pv, const Point p) { return pv + p; })
-        .def("__div__", [](const Polar_vector& pv, double d) { return pv / d; })
+        .def("__truediv__", [](const Polar_vector& pv, double d) { return pv / d; })
         .def("__mul__", [](const Polar_vector& pv, double d) { return pv * d; })
+        .def("__rmul__", [](const Polar_vector& pv, double d) { return pv * d; })
 
         .def("__repr__", [](const Geometry_Utilities::Polar_vector& pv) {
             std::ostringstream os;
@@ -972,40 +1005,39 @@ PYBIND11_MODULE(epiclib, m)
     py::class_<View_base, PyView_base>(m, "View_base")
         .def(py::init())
         .def("clear", &View_base::clear)
-        .def("notify_eye_movement", &View_base::notify_eye_movement, py::arg("GU::Point"))
-        .def("notify_object_appear", &View_base::notify_object_appear, py::arg("Symbol&"), py::arg("GU::Point"),
-             py::arg("GU::Size"))
-        .def("notify_object_disappear", &View_base::notify_object_disappear, py::arg("Symbol&"))
-        .def("notify_object_reappear", &View_base::notify_object_reappear, py::arg("Symbol&"))
-        .def("notify_erase_object", &View_base::notify_erase_object, py::arg("Symbol&"))
-        .def("notify_visual_location_changed", &View_base::notify_visual_location_changed, py::arg("Symbol&"),
-             py::arg("GU::Point"))
-        .def("notify_visual_size_changed", &View_base::notify_visual_size_changed, py::arg("Symbol&"),
-             py::arg("GU::Size"))
-        .def("notify_visual_property_changed", &View_base::notify_visual_property_changed, py::arg("Symbol&"),
-             py::arg("Symbol&"), py::arg("Symbol&"))
-        .def("notify_auditory_stream_appear", &View_base::notify_auditory_stream_appear, py::arg("Symbol&"),
-             py::arg("double"), py::arg("double"), py::arg("GU::Point"))
-        .def("notify_auditory_stream_disappear", &View_base::notify_auditory_stream_disappear, py::arg("Symbol&"))
+        .def("notify_eye_movement", &View_base::notify_eye_movement, py::arg("point"))
+        .def("notify_object_appear", &View_base::notify_object_appear, py::arg("name"), py::arg("location"),
+             py::arg("size"))
+        .def("notify_object_disappear", &View_base::notify_object_disappear, py::arg("name"))
+        .def("notify_object_reappear", &View_base::notify_object_reappear, py::arg("name"))
+        .def("notify_erase_object", &View_base::notify_erase_object, py::arg("name"))
+        .def("notify_visual_location_changed", &View_base::notify_visual_location_changed, py::arg("name"),
+             py::arg("location"))
+        .def("notify_visual_size_changed", &View_base::notify_visual_size_changed, py::arg("name"), py::arg("size"))
+        .def("notify_visual_property_changed", &View_base::notify_visual_property_changed, py::arg("object_name"),
+             py::arg("property_name"), py::arg("property_value"))
+        .def("notify_auditory_stream_appear", &View_base::notify_auditory_stream_appear, py::arg("name"),
+             py::arg("pitch"), py::arg("loudness"), py::arg("location"))
+        .def("notify_auditory_stream_disappear", &View_base::notify_auditory_stream_disappear, py::arg("name"))
         .def("notify_auditory_stream_location_changed", &View_base::notify_auditory_stream_location_changed,
-             py::arg("Symbol&"), py::arg("GU::Point"))
-        .def("notify_auditory_stream_pitch_changed", &View_base::notify_auditory_stream_pitch_changed,
-             py::arg("Symbol&"), py::arg("double"))
+             py::arg("name"), py::arg("location"))
+        .def("notify_auditory_stream_pitch_changed", &View_base::notify_auditory_stream_pitch_changed, py::arg("name"),
+             py::arg("pitch"))
         .def("notify_auditory_stream_loudness_changed", &View_base::notify_auditory_stream_loudness_changed,
-             py::arg("Symbol&"), py::arg("double"))
-        .def("notify_auditory_stream_size_changed", &View_base::notify_auditory_stream_size_changed, py::arg("Symbol&"),
-             py::arg("GU::Size"))
+             py::arg("name"), py::arg("loudness"))
+        .def("notify_auditory_stream_size_changed", &View_base::notify_auditory_stream_size_changed, py::arg("name"),
+             py::arg("size"))
         .def("notify_auditory_stream_property_changed", &View_base::notify_auditory_stream_property_changed,
-             py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
-        .def("notify_auditory_sound_start", &View_base::notify_auditory_sound_start, py::arg("Symbol&"),
-             py::arg("Symbol&"), py::arg("long"), py::arg("GU::Point"), py::arg("Symbol&"), py::arg("double"))
-        .def("notify_auditory_speech_start", &View_base::notify_auditory_speech_start, py::arg("Speech_word&"))
-        .def("notify_auditory_sound_stop", &View_base::notify_auditory_sound_stop, py::arg("Symbol&"))
-        .def("notify_erase_sound", &View_base::notify_erase_sound, py::arg("Symbol&"))
+             py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("notify_auditory_sound_start", &View_base::notify_auditory_sound_start, py::arg("name"), py::arg("stream"),
+             py::arg("duration"), py::arg("location"), py::arg("timbre"), py::arg("loudness"))
+        .def("notify_auditory_speech_start", &View_base::notify_auditory_speech_start, py::arg("word"))
+        .def("notify_auditory_sound_stop", &View_base::notify_auditory_sound_stop, py::arg("name"))
+        .def("notify_erase_sound", &View_base::notify_erase_sound, py::arg("name"))
         .def("notify_auditory_sound_property_changed", &View_base::notify_auditory_sound_property_changed,
-             py::arg("Symbol&"), py::arg("Symbol&"), py::arg("Symbol&"))
-        .def("notify_append_text", &View_base::notify_append_text, py::arg("std::string&"))
-        .def("notify_time", &View_base::notify_time, py::arg("long"))
+             py::arg("object_name"), py::arg("property_name"), py::arg("property_value"))
+        .def("notify_append_text", &View_base::notify_append_text, py::arg("text"))
+        .def("notify_time", &View_base::notify_time, py::arg("time"))
         .def("attach_to", &View_base::attach_to, py::arg("processor_ptr"))
         .def("detach_from", &View_base::detach_from, py::arg("processor_ptr"))
         .def("detach_from_all", &View_base::detach_from_all);
