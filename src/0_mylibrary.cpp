@@ -455,6 +455,8 @@ PYBIND11_MODULE(epiclib, m)
 {
     m.doc() = "EPICLib bindings for Python - Travis Seymour, PhD";
 
+    m.attr("__version__") = EPICLIB_VERSION;
+
     // ----- other ---------
     m.def("describe_parameters_u", &describe_parameters_u,
           py::doc("access to describe_parameters() without referencing a Human pointer"));

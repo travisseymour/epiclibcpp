@@ -34,8 +34,14 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 pybind11_add_module(epiclib MODULE ${EPICLIB_SOURCES})
 
 # You may keep any global defines you used previously
+# Version: scikit-build-core sets SKBUILD_PROJECT_VERSION from setuptools_scm
+if (NOT DEFINED SKBUILD_PROJECT_VERSION)
+  set(SKBUILD_PROJECT_VERSION "0.0.0")
+endif()
+
 target_compile_definitions(epiclib PRIVATE
         WIN32_LEAN_AND_MEAN NOMINMAX _CRT_SECURE_NO_WARNINGS EPICLIB_WITH_PYBIND11=1
+        EPICLIB_VERSION="${SKBUILD_PROJECT_VERSION}"
 )
 
 # Platform libs (e.g., sockets on Windows)
