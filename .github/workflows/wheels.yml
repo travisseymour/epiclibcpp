@@ -22,10 +22,12 @@ jobs:
           - os: ubuntu-22.04
             env:
               CIBW_DEPENDENCY_VERSIONS: "pinned"
-              CIBW_BUILD: "cp310-manylinux_x86_64 cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
+              CIBW_BUILD: "cp311-manylinux_x86_64 cp312-manylinux_x86_64 cp313-manylinux_x86_64 cp314-manylinux_x86_64"
               CIBW_SKIP: "*-musllinux_*"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+              CIBW_TEST_REQUIRES: "pytest"
+              CIBW_TEST_COMMAND: "pytest {project}/tests -v"
               CXXFLAGS: "-w -static-libstdc++ -static-libgcc"
               CFLAGS: "-w"
 
@@ -33,17 +35,19 @@ jobs:
           - os: windows-2022
             env:
               CIBW_DEPENDENCY_VERSIONS: "pinned"
-              CIBW_BUILD: "cp310-win_amd64 cp311-win_amd64 cp312-win_amd64 cp313-win_amd64 cp314-win_amd64"
+              CIBW_BUILD: "cp311-win_amd64 cp312-win_amd64 cp313-win_amd64 cp314-win_amd64"
               CIBW_SKIP: "*-win32"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_ARCHS_WINDOWS: "AMD64"
+              CIBW_TEST_REQUIRES: "pytest"
+              CIBW_TEST_COMMAND: "pytest {project}/tests -v"
               CL: "/W0"
 
           # macOS Intel (x86_64)
           - os: macos-15-intel
             env:
               CIBW_DEPENDENCY_VERSIONS: "pinned"
-              CIBW_BUILD: "cp310-macosx_x86_64 cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64 cp314-macosx_x86_64"
+              CIBW_BUILD: "cp311-macosx_x86_64 cp312-macosx_x86_64 cp313-macosx_x86_64 cp314-macosx_x86_64"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_ENVIRONMENT_MACOS: >-
                 MACOSX_DEPLOYMENT_TARGET=10.13
@@ -51,6 +55,8 @@ jobs:
                 CMAKE_OSX_ARCHITECTURES=x86_64
                 SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=x86_64;-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13"
               CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs x86_64 -w {dest_dir} -v {wheel}"
+              CIBW_TEST_REQUIRES: "pytest"
+              CIBW_TEST_COMMAND: "pytest {project}/tests -v"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
@@ -58,7 +64,7 @@ jobs:
           - os: macos-15   # or macos-latest (currently macOS 15)
             env:
               CIBW_DEPENDENCY_VERSIONS: "pinned"
-              CIBW_BUILD: "cp310-macosx_arm64 cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64 cp314-macosx_arm64"
+              CIBW_BUILD: "cp311-macosx_arm64 cp312-macosx_arm64 cp313-macosx_arm64 cp314-macosx_arm64"
               CIBW_BUILD_VERBOSITY: "3"
               CIBW_ENVIRONMENT_MACOS: >-
                 MACOSX_DEPLOYMENT_TARGET=11.0
@@ -66,6 +72,8 @@ jobs:
                 CMAKE_OSX_ARCHITECTURES=arm64
                 SKBUILD_CMAKE_ARGS="-DCMAKE_OSX_ARCHITECTURES=arm64;-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
               CIBW_REPAIR_WHEEL_COMMAND_MACOS: "delocate-wheel --require-archs arm64 -w {dest_dir} -v {wheel}"
+              CIBW_TEST_REQUIRES: "pytest"
+              CIBW_TEST_COMMAND: "pytest {project}/tests -v"
               CXXFLAGS: "-w"
               CFLAGS: "-w"
 
