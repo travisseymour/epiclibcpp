@@ -310,6 +310,34 @@ private:
             if (py::hasattr(stream, "close"))
                 close_func = stream.attr("close");
         }
+
+        // Must decref py::object refs with GIL held
+        ~PyCachedStream()
+        {
+            // Check if interpreter is still alive before acquiring GIL
+            if (Py_IsInitialized()) {
+                py::gil_scoped_acquire gil;
+                // Assign empty objects to decref while holding GIL
+                // (member destructors run after this, but will be no-ops)
+                close_func = py::object();
+                flush_func = py::object();
+                write_func = py::object();
+                stream = py::object();
+            }
+        }
+
+        // Move constructor (needed because we have custom destructor)
+        PyCachedStream(PyCachedStream&& other) noexcept
+            : stream(std::move(other.stream))
+            , write_func(std::move(other.write_func))
+            , flush_func(std::move(other.flush_func))
+            , close_func(std::move(other.close_func))
+        {}
+
+        // Delete copy operations
+        PyCachedStream(const PyCachedStream&) = delete;
+        PyCachedStream& operator=(const PyCachedStream&) = delete;
+        PyCachedStream& operator=(PyCachedStream&&) = delete;
     };
 
     std::list<PyCachedStream> py_streams;
