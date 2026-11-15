@@ -10,14 +10,7 @@
 
 This is the EPIC cognitive architecture C++ core library wrapped with pybind11 as the `epiclib` Python extension.
 
-### Install (development builds from TestPyPI)
-
-```bash
-python -m pip install --pre -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple -U epiclibcpp
-python -c "import epiclibcpp.epiclib, importlib.metadata as m; print('epiclibcpp:', epiclibcpp, 'version:', m.version('epiclibcpp'))"
-```
-
-### Install (official releases from PyPI)
+### Install
 
 ```bash
 python -m pip install epiclibcpp
@@ -25,17 +18,32 @@ python -m pip install epiclibcpp
 
 ### Development
 
-- Pushes to `main` automatically build wheels for Linux, macOS (Intel + ARM), and Windows for Python 3.10–3.14, and publish them to **TestPyPI**.
-- Git tags like `v0.1.0` trigger a release build and upload wheels to **PyPI**.
+#### Releasing a New Version
 
-e.g.:
+1. Update the version in `pyproject.toml`:
+   ```toml
+   [project]
+   version = "0.2.2"
+   ```
+2. Commit and push to `main`:
+   ```bash
+   git add pyproject.toml
+   git commit -m "Bump version to 0.2.2"
+   git push origin main
+   ```
+3. CI automatically builds wheels for Linux, macOS (Intel + ARM), and Windows for Python 3.11–3.14, and publishes them to **PyPI**.
+
+#### Tagging (Optional)
+
+Git tags are optional and serve as documentation for significant milestones:
 
 ```bash
-git tag v0.1.0
-git push origin main v0.1.0
+git tag v0.2.2
+git push origin v0.2.2
 ```
 
-> Note: You can check which versions you already have like this `git tag -l "v*"`
+> Note: Tags do not control the version number. The version is always read from `pyproject.toml`.
+> Check existing tags with `git tag -l "v*"`
 
 ### Example
 
