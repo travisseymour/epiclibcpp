@@ -158,11 +158,14 @@ public:
         }
 
 #ifdef EPICLIB_WITH_PYBIND11
-        std::ostringstream __oss;
-        if (!stream_ptr_list.empty())
-            __oss.copyfmt(*stream_ptr_list.front()); // match flags/precision/width
-        __oss << x;
-        write_to_python_streams(__oss.str()); // to avoid this formatting/precision, just use std::ostringstream oss
+        if (!py_streams.empty()) {
+            py_format_buffer.str("");
+            py_format_buffer.clear();
+            if (!stream_ptr_list.empty())
+                py_format_buffer.copyfmt(*stream_ptr_list.front()); // match flags/precision/width
+            py_format_buffer << x;
+            write_to_python_streams(py_format_buffer.str());
+        }
 #endif
 
         // do nothing further if no views in the list
@@ -241,15 +244,15 @@ public:
     // Attach/detach Python streams (objects with write/flush/close)
     void add_py_stream(py::object stream)
     {
-        // Store a strong ref; allow duplicates only if you want fan-out duplication
-        py_streams.push_back(std::move(stream));
+        // Store with cached callables; allow duplicates only if you want fan-out duplication
+        py_streams.emplace_back(std::move(stream));
     }
     // Optional niceties — use only if you want to support detaching/clearing
     bool remove_py_stream(const py::object& stream)
     {
         py::gil_scoped_acquire gil; // safe even if already held
         for (auto it = py_streams.begin(); it != py_streams.end(); ++it) {
-            if (it->is(stream)) { // identity check: Python's "is"
+            if (it->stream.is(stream)) { // identity check: Python's "is"
                 py_streams.erase(it);
                 return true;
             }
@@ -259,6 +262,7 @@ public:
 
     void clear_py_streams()
     {
+        py_line_buffer.clear();  // also clear the line buffer
         py_streams.clear();
     }
 
@@ -290,34 +294,76 @@ private:
     std::ostringstream view_line_buffer;
 
 #ifdef EPICLIB_WITH_PYBIND11
-    std::list<py::object> py_streams;
+    // Cached stream with pre-resolved write/flush/close callables
+    struct PyCachedStream {
+        py::object stream;
+        py::object write_func;
+        py::object flush_func;
+        py::object close_func;
 
-    // Write a chunk (exactly as sent to std::ostreams) to all Python streams
-    void write_to_python_streams(const std::string& chunk)
+        PyCachedStream(py::object s) : stream(std::move(s))
+        {
+            py::gil_scoped_acquire gil;
+            write_func = stream.attr("write");
+            if (py::hasattr(stream, "flush"))
+                flush_func = stream.attr("flush");
+            if (py::hasattr(stream, "close"))
+                close_func = stream.attr("close");
+        }
+    };
+
+    std::list<PyCachedStream> py_streams;
+    std::string py_line_buffer;            // accumulate output until newline
+    std::ostringstream py_format_buffer;   // reusable formatting buffer
+
+    // Flush a complete line to all Python streams (called when newline encountered)
+    void flush_line_to_python(const std::string& line)
     {
-        if (py_streams.empty())
-            return;
-        // We may be called from C++ code while in Python land; always (re)acquire the GIL
         py::gil_scoped_acquire gil;
-        for (auto& obj : py_streams) {
+        for (auto& cached : py_streams) {
             try {
-                obj.attr("write")(chunk);
+                cached.write_func(line);
             }
-            catch (const py::error_already_set& e) {
-                // Swallow to keep C++ logging robust; optionally you could route to stderr.
+            catch (const py::error_already_set&) {
+                // Swallow to keep C++ logging robust
                 PyErr_Clear();
             }
         }
     }
+
+    // Write a chunk, buffering until newline for efficiency
+    void write_to_python_streams(const std::string& chunk)
+    {
+        if (py_streams.empty())
+            return;
+
+        py_line_buffer += chunk;
+
+        // Flush complete lines to Python
+        size_t pos;
+        while ((pos = py_line_buffer.find('\n')) != std::string::npos) {
+            std::string line = py_line_buffer.substr(0, pos + 1);
+            py_line_buffer.erase(0, pos + 1);
+            flush_line_to_python(line);
+        }
+    }
+
     void flush_python_streams()
     {
         if (py_streams.empty())
             return;
+
+        // Flush any remaining buffered content first
+        if (!py_line_buffer.empty()) {
+            flush_line_to_python(py_line_buffer);
+            py_line_buffer.clear();
+        }
+
         py::gil_scoped_acquire gil;
-        for (auto& obj : py_streams) {
-            if (py::hasattr(obj, "flush")) {
+        for (auto& cached : py_streams) {
+            if (!cached.flush_func.is_none()) {
                 try {
-                    obj.attr("flush")();
+                    cached.flush_func();
                 }
                 catch (const py::error_already_set&) {
                     PyErr_Clear();
@@ -325,15 +371,20 @@ private:
             }
         }
     }
+
     void close_python_streams()
     {
         if (py_streams.empty())
             return;
+
+        // Flush any remaining buffered content before closing
+        flush_python_streams();
+
         py::gil_scoped_acquire gil;
-        for (auto& obj : py_streams) {
-            if (py::hasattr(obj, "close")) {
+        for (auto& cached : py_streams) {
+            if (!cached.close_func.is_none()) {
                 try {
-                    obj.attr("close")();
+                    cached.close_func();
                 }
                 catch (const py::error_already_set&) {
                     PyErr_Clear();
