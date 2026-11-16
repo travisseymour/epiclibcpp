@@ -34,7 +34,7 @@ DEPENDENCIES = [
     "plumbum",
 ]
 
-TEST_CODE = r'''
+TEST_CODE = r"""
 import math
 import sys
 import random
@@ -50,7 +50,10 @@ from epiclibcpp.epiclib import (
 )
 from epiclibcpp.epiclib import View_base, Visual_encoder_base, Auditory_encoder_base
 from epiclibcpp.epiclib.pps_globals import PPS_out
-from epiclibcpp.epiclib.output_tee_globals import (Normal_out, Trace_out, Exception_out, Debug_out)
+from epiclibcpp.epiclib.output_tee_globals import (
+    Normal_out, Trace_out, Exception_out, Debug_out,
+    cleanup_all_output_tees
+)
 from epiclibcpp.epiclib import numeric_utilities as nu, random_utilities as ru, symbol_utilities as su
 from epiclibcpp.epiclib.syllable_counter import count_total_syllables
 from epiclibcpp.epiclib.standard_symbols import *
@@ -129,9 +132,12 @@ class ConsoleWriter:
     def close(self):
         self.flush()
 
+from epiclibcpp import epiclib
+
 print('\n\n--------------------------------------------------')
 print('--------------------------------------------------')
 print('OUTPUT OF run_test_from_local_build.py')
+print(f'epiclibcpp version: {epiclib.__version__}')
 print('--------------------------------------------------')
 print('--------------------------------------------------\n')
 
@@ -362,14 +368,12 @@ Debug_out('@@@ This Should Not Print Anything BC It Has no sinks!\n')
 
 Exception_out('~~DONE~~\n')
 
-for ot in (Normal_out, Trace_out, PPS_out, Exception_out, Debug_out):
-    ot.py_flush()
-    ot.clear_py_streams()
-    ot.py_close()
-
+# Clean up all Python streams before exiting to prevent segfaults
+# during interpreter shutdown (must be called before exit)
+cleanup_all_output_tees()
 
 sys.exit()
-'''
+"""
 
 
 def main():
@@ -401,7 +405,7 @@ def main():
     print("Running tests...")
     print("=" * 50 + "\n")
 
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, check=False)
 
     # Clean up
     Path(test_file).unlink(missing_ok=True)

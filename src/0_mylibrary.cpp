@@ -506,6 +506,11 @@ PYBIND11_MODULE(epiclib, m)
     m_globals.attr("Stats_out") = py::cast(&Stats_out, py::return_value_policy::reference);
     m_globals.attr("Info_out") = py::cast(&Info_out, py::return_value_policy::reference);
 
+    // Cleanup function to clear all Python streams before interpreter shutdown
+    m_globals.def("cleanup_all_output_tees", &cleanup_all_output_tees,
+        "Clear all Python streams from all global Output_tee instances. "
+        "Call this before exiting to prevent segfaults during interpreter shutdown.");
+
     auto pps_globals = m.def_submodule("pps_globals", "Global PPS Output_tee instance");
     pps_globals.attr("PPS_out") = py::cast(&PPS_out, py::return_value_policy::reference);
 
