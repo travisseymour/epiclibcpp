@@ -18,6 +18,7 @@ const Symbol End_time_c("End_time");
 const Symbol Eccentricity_c("Eccentricity");
 const Symbol Eccentricity_zone_c("Eccentricity_zone");
 const Symbol Fovea_c("Fovea");
+const Symbol Parafovea_c("Parafovea");
 const Symbol Periphery_c("Periphery");
 
 // Standard names for motor command terms:

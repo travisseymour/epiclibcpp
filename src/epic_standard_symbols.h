@@ -22,6 +22,7 @@ extern const Symbol End_time_c;
 extern const Symbol Eccentricity_c;
 extern const Symbol Eccentricity_zone_c;
 extern const Symbol Fovea_c;
+extern const Symbol Parafovea_c;
 extern const Symbol Periphery_c;
 
 

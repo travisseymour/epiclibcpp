@@ -838,7 +838,8 @@ bool Eye_processor::update_location_information(shared_ptr<Visual_store_object> 
 void Eye_processor::send_eccentricity_update(const Symbol& psychological_name, double ecc)
 {
     Symbol eccentricity_value(ecc);
-    const Symbol& eccentricity_zone_value = (ecc <= standard_fovea_radius) ? Fovea_c : Periphery_c;
+    const Symbol& eccentricity_zone_value = (ecc <= standard_fovea_radius) ? Fovea_c :
+                                              (ecc <= standard_parafovea_radius) ? Parafovea_c : Periphery_c;
     schedule_event(new Visual_Change_Property_event(get_time() + eccentricity_delay.get_long_value(),
                                                     get_human_ptr()->get_visual_sensory_store_ptr(), psychological_name,
                                                     Eccentricity_c, eccentricity_value));
