@@ -189,9 +189,9 @@ void Eye_processor::setup()
     attention_list[Char_Curve_Open_c] = make_shared<Flat_attention>(physical_store, Char_Curve_Open_c);
     attention_list[Char_Curve_Closed_c] = make_shared<Flat_attention>(physical_store, Char_Curve_Closed_c);
 
-    // MWalton: Saliency map
-    //    visual_saliency = new Visual_attention_processor();
-    visual_saliency = make_shared<Visual_attention_processor>();
+    // The saliency map is created only by a Saliency_map parameter; without one,
+    // visual_saliency stays null and no saliency modulation is done.
+    visual_saliency = nullptr;
 
     add_parameter(appearance_disappearance_delay);
     add_parameter(eccentricity_delay);
@@ -226,16 +226,12 @@ void Eye_processor::initialize()
     auditory_reflex_on = false;
     involuntary_movement_in_progress = false;
     last_invol_ocular_command_time = 0;
-    attention_coeff = 1; // MWalton: Attnetion
-
-    // availability_accumulator.reset();
-
-    //	eccentricity_fluctuation.set_randomization_time(Parameter::When_used);
-    //	eccentricity_fluctuation.randomize();
-    //	set_trace(true);
-    //	set_randomize_when_used(true);
-    //	set_randomize(true);
-    //	describe_parameters(Normal_out);
+    // attention state is reset at the start of every run;
+    // note that Human_processor::initialize() has already applied the parameters at this point
+    attention_coeff = 1;
+    saliency_missing_warned = false;
+    if (visual_saliency)
+        visual_saliency->initialize();
 }
 
 //  parameter modifiers
@@ -250,11 +246,13 @@ void Eye_processor::set_parameter(const Parameter_specification& param_spec)
         shared_ptr<Availability> p = Availability::create(physical_store, param_spec);
         availabilities[p->get_property_name()] = p;
     }
-    // MWalton: Attention
     else if (param_spec.parameter_name == "Attention") {
         Visual_physical_store& physical_store = *(get_human_ptr()->get_Visual_physical_store_ptr());
         shared_ptr<Attention> p = Attention::create(physical_store, param_spec);
         attention_list[p->get_property_name()] = p;
+    }
+    else if (param_spec.parameter_name == "Saliency_map") {
+        visual_saliency = Visual_attention_processor::create(param_spec);
     }
     else {
         Human_subprocessor::set_parameter(param_spec);
@@ -276,7 +274,10 @@ void Eye_processor::describe_parameters(Output_tee& ot) const
         ot << "    " << it->second->get_description() << endl;
     }
     ot << "Visual Saliency:" << endl;
-    ot << "    " << visual_saliency->get_description() << endl;
+    if (visual_saliency)
+        ot << "    " << visual_saliency->get_description() << endl;
+    else
+        ot << "    No saliency map (no Saliency_map parameter); property delays are not modulated by saliency." << endl;
 }
 
 
@@ -681,30 +682,16 @@ void Eye_processor::set_object_property(const Symbol& physical_name, const Symbo
     //	if(prop_name == Color_c)
     //		Normal_out << "Set Color: " << obj_ptr->get_name() << ' ' << new_value << endl;
 
-    // go ahead and send the property forward
-
-    // MWalton Attention:
-    //  look up attention function for this property
-    Attention_map::iterator it_attention = attention_list.find(prop_name);
-    if (it_attention != attention_list.end()) {
-        std::shared_ptr<Attention> atten_ptr = it_attention->second;
-        long atten_delay = atten_ptr->delay(obj_ptr, property_time_fluctuation.get_double_value(), attention_coeff);
-        // if a non-zero attention value has been defined, use that
-        if (atten_delay > 0) {
-            delay = atten_delay;
-            // std::cout << prop_name << " ECC:" << obj_ptr->get_eccentricity() << " DELAY:" << delay << " ATTN_COEFF:"
-            // << attention_coeff << "\n"; //DEBUG output
-        }
-    }
-    // MWalton Attention Saliency Map:
-    // make variation based on visual saliency if defined
-    if (visual_saliency != NULL) {
-        GU::Point eye_loc = get_human_ptr()->get_Eye_processor_ptr()->get_location();
-        delay = visual_saliency->delay(delay, obj_ptr, eye_loc, property_time_fluctuation.get_double_value());
-    }
+    // go ahead and send the property forward, with the delay modulated by attention (if any is configured)
+    // look up availability
+    Availability_map_t::iterator it_avail = availabilities.find(prop_name);
+    if (it_avail == availabilities.end())
+        throw Unknown_physical_property(this, prop_name);
+    long final_delay = property_delay(obj_ptr, prop_name, it_avail->second);
 
     // queue a message to the sensory store
-    schedule_event(new Visual_Change_Property_event(get_time() + delay, get_human_ptr()->get_visual_sensory_store_ptr(),
+    schedule_event(new Visual_Change_Property_event(get_time() + final_delay,
+                                                    get_human_ptr()->get_visual_sensory_store_ptr(),
                                                     name_map.get_psychological_name(physical_name), prop_name,
                                                     new_value));
 }
@@ -875,31 +862,31 @@ void Eye_processor::send_property_availability_update(shared_ptr<Visual_store_ob
     // get the old availability
     bool old_available = obj_ptr->is_available(prop_name);
 
-    long delay = 0;
-    Symbol new_value = prop_value;
-
-    bool available = apply_availability(obj_ptr, prop_name, new_value, delay);
-    //	if(prop_name == Color_c)
-    //		Normal_out << "in send_property_availability_update after apply_availability " <<
-    //			obj_ptr->get_name() << " color " << available << " as " << new_value << endl;
-
-    // do nothing more if no change in availability and no change in value
-    //	if(available == old_available && prop_value == new_value)
-    //		return;
+    // look up availability and delay functions in maps
+    Availability_map_t::iterator it_availability = availabilities.find(prop_name);
+    if (it_availability == availabilities.end())
+        throw Unknown_physical_property(this, prop_name);
+    shared_ptr<Availability> a_ptr = it_availability->second;
+    bool available = a_ptr->available(obj_ptr);
     // do nothing more if no change in availability
     if (available == old_available)
         return;
 
     // update the availability and the value;
+    Symbol new_value;
     if (available) {
         obj_ptr->set_available(prop_name);
-        //		new_value = prop_value;
+        new_value = prop_value;
     }
     else {
         obj_ptr->set_unavailable(prop_name);
         new_value = Nil_c;
     }
-    delay = delay * property_time_fluctuation.get_double_value();
+    // a property becoming available is new information and gets the attention-modulated delay;
+    // a property becoming unavailable is removed after the ordinary availability delay
+    long delay = (available)
+                     ? property_delay(obj_ptr, prop_name, a_ptr)
+                     : long(a_ptr->delay(obj_ptr) * property_time_fluctuation.get_double_value());
     Symbol psychological_name = name_map.get_psychological_name(obj_ptr->get_name());
     // check for an inter-object relation, and make the new value the psychological name
     new_value = change_related_object_name(prop_name, new_value);
@@ -1161,34 +1148,112 @@ bool Eye_processor::free_to_move() const
 }
 
 /*
- Saliency map cue insertion
+ Attention-modulated property delay.
+ Stage 1: the Kieras availability delay for the property (with the usual time fluctuation).
+ Stage 2: if the property has a non-flat Attention function that returns a positive delay,
+          that delay replaces the stage 1 delay (the same time-fluctuation value is used).
+ Stage 3: if a Saliency_map parameter was given, the delay is lengthened according to the
+          relative salience of the object's location.
+ With no Attention or Saliency_map parameters, stages 2 and 3 do nothing, the fluctuation
+ parameter is sampled exactly once as in the original EPIC, and the result is identical
+ to the original EPIC delay.
  */
+long Eye_processor::property_delay(shared_ptr<Visual_store_object> obj_ptr, const Symbol& prop_name,
+                                    shared_ptr<Availability> a_ptr)
+{
+    double time_fluctuation = property_time_fluctuation.get_double_value();
+
+    // a property without its own attention function uses the default (flat) one
+    shared_ptr<Attention> atten_ptr = default_attention;
+    Attention_map::iterator attention_model = attention_list.find(prop_name);
+    if (attention_model != attention_list.end())
+        atten_ptr = attention_model->second;
+
+    long delay;
+    long atten_delay = atten_ptr->delay(obj_ptr, time_fluctuation, attention_coeff);
+    if (atten_delay > 0) {
+        delay = atten_delay;
+        if (get_trace() && Trace_out)
+            Trace_out << processor_info() << "attention delay for " << prop_name << " at eccentricity "
+                      << obj_ptr->get_eccentricity() << " with attention coefficient " << attention_coeff << " is "
+                      << delay << endl;
+    }
+    else
+        delay = long(a_ptr->delay(obj_ptr) * time_fluctuation);
+
+    if (visual_saliency)
+        delay = visual_saliency->delay(delay, obj_ptr, eye_location);
+
+    return delay;
+}
+
+void Eye_processor::reset_attention_parameters()
+{
+    Visual_physical_store& physical_store = *(get_human_ptr()->get_Visual_physical_store_ptr());
+    for (Attention_map::iterator it = attention_list.begin(); it != attention_list.end(); ++it)
+        it->second = make_shared<Flat_attention>(physical_store, it->first);
+    visual_saliency = nullptr;
+}
+
+/*
+ Saliency map cue commands, from the rule action (Attend_to ...)
+ Without a Saliency_map parameter these do nothing except warn once per run.
+ */
+
+bool Eye_processor::check_saliency_map(const string& command)
+{
+    if (visual_saliency)
+        return true;
+    if (!saliency_missing_warned && Normal_out)
+        Normal_out << processor_info() << "Warning: (Attend_to " << command
+                   << " ...) ignored because no Saliency_map parameter was specified;"
+                   << " further Attend_to commands in this run are also ignored" << endl;
+    saliency_missing_warned = true;
+    return false;
+}
 
 void Eye_processor::insert_spatial_cue(const Symbol& objname)
 {
-    visual_saliency->spatial_cue(get_human_ptr(), objname);
+    if (!check_saliency_map("Cue"))
+        return;
+    if (!visual_saliency->spatial_cue(get_human_ptr(), objname) && Normal_out)
+        Normal_out << processor_info() << "Warning: (Attend_to Cue " << objname
+                   << ") ignored because the object is not in the visual perceptual store" << endl;
 }
 
 void Eye_processor::insert_regional_cue(const Symbol& region)
 {
-    visual_saliency->regional_cue(region);
+    if (!check_saliency_map("Region"))
+        return;
+    if (!visual_saliency->regional_cue(region))
+        throw Epic_exception(this,
+                             string("Unknown region in (Attend_to Region ") + region.str() +
+                                 "); must be one of Left, Right, Above, Below, Upper_Left, Upper_Right, "
+                                 "Lower_Left, Lower_Right, Visual_Space");
 }
 
 void Eye_processor::cue_previous()
 {
-    visual_saliency->spatial_cue(get_human_ptr());
+    if (!check_saliency_map("Previous"))
+        return;
+    if (!visual_saliency->spatial_cue_previous() && Normal_out)
+        Normal_out << processor_info() << "Warning: (Attend_to Previous) ignored because no object has been cued yet"
+                   << endl;
 }
 
 void Eye_processor::clear_spatial_map()
 {
-    visual_saliency->clear_endogenous_spatial();
+    if (!check_saliency_map("Null"))
+        return;
+    visual_saliency->clear_cues();
 }
 
 /*
  Attention coefficient modulation function
- Rule: (Modulate_attention focus <value>)
+ Rule: (Modulate_attention Focus <value>)
  where value = change in attention_coeff
  value cannot be <= 0, minimum enforced at .01
+ The coefficient only matters for properties with a Fixed_quadratic or Quadratic Attention function.
  */
 void Eye_processor::focus_attention(double delta_a)
 {
@@ -1207,24 +1272,26 @@ void Eye_processor::set_attention(double a)
 }
 
 /*
- Saliency map data accessors for external visualization (e.g., EPICpy GUI)
- Returns 2D vector representation of the maps for Python bindings
+ Saliency map data accessors for external visualization (e.g., EPICpy GUI).
+ The analytic saliency map is sampled on a grid for display.
  */
 
 std::vector<std::vector<double>> Eye_processor::get_endogenous_spatial_map_data() const
 {
     std::vector<std::vector<double>> result;
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return result;
-    }
-    Saliency_map* map_ptr = visual_saliency->endogenous_spatial_ptr();
-    size_t width = map_ptr->get_width();
-    size_t height = map_ptr->get_height();
-    result.resize(height);
-    for (size_t y = 0; y < height; ++y) {
-        result[y].resize(width);
-        for (size_t x = 0; x < width; ++x) {
-            result[y][x] = map_ptr->get_value(x, y);
+    const Saliency_map& map = visual_saliency->get_saliency_map();
+    double radius = map.get_periphery_radius();
+    double res = map.get_grid_resolution();
+    int n = int(radius / res);
+    int size = 2 * n + 1;
+    result.resize(size);
+    for (int j = -n; j <= n; ++j) {
+        result[j + n].resize(size);
+        for (int i = -n; i <= n; ++i) {
+            GU::Point p(eye_location.x + i * res, eye_location.y + j * res);
+            result[j + n][i + n] = map.cue_value(p, eye_location);
         }
     }
     return result;
@@ -1233,17 +1300,19 @@ std::vector<std::vector<double>> Eye_processor::get_endogenous_spatial_map_data(
 std::vector<std::vector<double>> Eye_processor::get_combined_saliency_map_data() const
 {
     std::vector<std::vector<double>> result;
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return result;
-    }
-    Saliency_map* map_ptr = visual_saliency->saliency_ptr();
-    size_t width = map_ptr->get_width();
-    size_t height = map_ptr->get_height();
-    result.resize(height);
-    for (size_t y = 0; y < height; ++y) {
-        result[y].resize(width);
-        for (size_t x = 0; x < width; ++x) {
-            result[y][x] = map_ptr->get_value(x, y);
+    const Saliency_map& map = visual_saliency->get_saliency_map();
+    double radius = map.get_periphery_radius();
+    double res = map.get_grid_resolution();
+    int n = int(radius / res);
+    int size = 2 * n + 1;
+    result.resize(size);
+    for (int j = -n; j <= n; ++j) {
+        result[j + n].resize(size);
+        for (int i = -n; i <= n; ++i) {
+            GU::Point p(eye_location.x + i * res, eye_location.y + j * res);
+            result[j + n][i + n] = map.value(p, eye_location);
         }
     }
     return result;
@@ -1252,17 +1321,19 @@ std::vector<std::vector<double>> Eye_processor::get_combined_saliency_map_data()
 std::vector<std::vector<double>> Eye_processor::get_retinal_map_data() const
 {
     std::vector<std::vector<double>> result;
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return result;
-    }
-    Saliency_map* map_ptr = visual_saliency->retinal_ptr();
-    size_t width = map_ptr->get_width();
-    size_t height = map_ptr->get_height();
-    result.resize(height);
-    for (size_t y = 0; y < height; ++y) {
-        result[y].resize(width);
-        for (size_t x = 0; x < width; ++x) {
-            result[y][x] = map_ptr->get_value(x, y);
+    const Saliency_map& map = visual_saliency->get_saliency_map();
+    double radius = map.get_periphery_radius();
+    double res = map.get_grid_resolution();
+    int n = int(radius / res);
+    int size = 2 * n + 1;
+    result.resize(size);
+    for (int j = -n; j <= n; ++j) {
+        result[j + n].resize(size);
+        for (int i = -n; i <= n; ++i) {
+            GU::Point p(eye_location.x + i * res, eye_location.y + j * res);
+            result[j + n][i + n] = map.retinal_value(p, eye_location);
         }
     }
     return result;
@@ -1270,24 +1341,23 @@ std::vector<std::vector<double>> Eye_processor::get_retinal_map_data() const
 
 double Eye_processor::get_saliency_map_angular_resolution() const
 {
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return 1.0;
-    }
-    return visual_saliency->endogenous_spatial_ptr()->get_angular_resolution();
+    return visual_saliency->get_saliency_map().get_grid_resolution();
 }
 
 double Eye_processor::get_saliency_map_periphery_radius() const
 {
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return 60.0;
-    }
-    return visual_saliency->endogenous_spatial_ptr()->get_periphery_radius();
+    return visual_saliency->get_saliency_map().get_periphery_radius();
 }
 
 int Eye_processor::get_saliency_map_size() const
 {
-    if (!visual_saliency) {
+    if (!visual_saliency)
         return 120;
-    }
-    return static_cast<int>(visual_saliency->endogenous_spatial_ptr()->get_width());
+    double radius = visual_saliency->get_saliency_map().get_periphery_radius();
+    double res = visual_saliency->get_saliency_map().get_grid_resolution();
+    return 2 * int(radius / res) + 1;
 }

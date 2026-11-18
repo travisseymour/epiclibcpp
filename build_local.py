@@ -1,6 +1,6 @@
-#!/usr/bin/env -S uv run --python 3.12
+#!/usr/bin/env -S uv run --python 3.14
 # /// script
-# requires-python = ">=3.12"
+# requires-python = ">=3.14"
 # dependencies = ["build"]
 # ///
 

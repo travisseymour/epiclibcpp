@@ -268,6 +268,7 @@ extern const Symbol Lower_Left_c;
 extern const Symbol Lower_Right_c;
 extern const Symbol Visual_Space_c;
 extern const Symbol Clear_c;
+extern const Symbol Clear_alt_c;
 extern const Symbol Previous_c;
 
 #endif

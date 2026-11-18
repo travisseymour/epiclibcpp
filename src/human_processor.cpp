@@ -210,6 +210,11 @@ void Human_processor::set_parameters()
 {
     const Parameter_specification_list_t& parameter_specs = cognitive_ptr->get_parameter_specifications();
 
+    // Attention settings are defined only by the current rule file's parameters, so they return to
+    // their defaults (no attention) before the parameters are applied; otherwise an Attention or
+    // Saliency_map parameter from a previously compiled rule file would remain in effect.
+    eye_ptr->reset_attention_parameters();
+
     for (Parameter_specification_list_t::const_iterator spec_it = parameter_specs.begin();
          spec_it != parameter_specs.end(); ++spec_it) {
         Processors_t::iterator proc_it = processors.find(spec_it->processor_name);

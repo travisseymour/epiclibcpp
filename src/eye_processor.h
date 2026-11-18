@@ -69,8 +69,9 @@ public:
         , centering_smooth_move_radius("Centering_smooth_move_radius", 1.0)
         , centering_saccade_radius("Centering_saccade_radius", 10.0)
         , inform_invol_ocular_delay("Inform_invol_ocular_delay", 20)
-        , psychobj_counter(0) //,
-    // availability_distribution(10., 1.0)
+        , attention_coeff(1.)
+        , saliency_missing_warned(false)
+        , psychobj_counter(0)
     {
         setup();
     }
@@ -150,15 +151,20 @@ public:
     //	typedef bool (*Availability_function_t)(const Visual_physical_object&, double eccentricity_fluctuation);
     //	typedef long (*Delay_function_t)(const Visual_physical_object&, double time_fluctuation);
 
-    // attention functions
-    void focus_attention(double delta_a); // function used to modulate attention curve
-    void set_attention(double a);         // sets the attention coeff directly
+    // attention coefficient, from the rule action (Modulate_attention Focus|Set <value>)
+    void focus_attention(double delta_a); // adds delta_a to the attention coefficient
+    void set_attention(double a);         // sets the attention coefficient directly
+    double get_attention_coeff() const { return attention_coeff; }
 
-    // saliency functions
+    // saliency map cues, from the rule action (Attend_to Cue|Region|Previous|Null ...)
+    // these are ignored, with a warning, if no Saliency_map parameter was given
     void insert_spatial_cue(const Symbol& objname);
     void insert_regional_cue(const Symbol& region);
     void cue_previous();
     void clear_spatial_map();
+    bool has_saliency_map() const { return visual_saliency != nullptr; }
+    // return all Attention functions to Flat and remove any saliency map
+    void reset_attention_parameters();
 
     // saliency map data accessors for external visualization
     std::vector<std::vector<double>> get_endogenous_spatial_map_data() const;
@@ -210,9 +216,10 @@ private:
     typedef std::map<Symbol, std::shared_ptr<Attention>> Attention_map;
     Attention_map attention_list;
     std::shared_ptr<Attention> default_attention;
-    double attention_coeff;
+    double attention_coeff;    // scales the eccentricity term of quadratic Attention functions; 1 at start of run
+    bool saliency_missing_warned;
 
-    // saliency map container
+    // saliency map; null unless a Saliency_map parameter was specified
     std::shared_ptr<Visual_attention_processor> visual_saliency;
 
     // state
@@ -224,6 +231,9 @@ private:
 
     // helper functions
     void setup();
+    long property_delay(std::shared_ptr<Visual_store_object> obj_ptr, const Symbol& prop_name,
+                        std::shared_ptr<Availability> a_ptr);
+    bool check_saliency_map(const std::string& command);
     Symbol get_psychological_name_and_new_status(Symbol physical_name, bool& new_object);
     //	void finish_make_object_appear(const Symbol& physical_name, GU::Point location, GU::Size size);
     GU::Point location_noise(GU::Point location);

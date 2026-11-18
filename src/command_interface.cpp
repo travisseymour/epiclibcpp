@@ -64,45 +64,53 @@ void Command_interface::dispatch(const Symbol_list_t& arguments)
         return;
     }
 
-    // Modulate attentional focus
+    // Modulate the attention coefficient used by quadratic Attention functions
+    // (Modulate_attention Focus <delta>) or (Modulate_attention Set <value>)
     else if (arguments.front() == "Modulate_attention") {
         Symbol_list_t args = arguments; // so we can modify the argument list
         args.pop_front();
 
+        if (args.size() != 2 || !args.back().has_numeric_value())
+            throw Command_exception(
+                human_ptr,
+                string("Invalid rule Modulate_attention action, expected (Modulate_attention Focus|Set <number>): (") +
+                    concatenate_to_string(arguments) + ")");
         if (args.front() == Focus_c)
-            human_ptr->get_Eye_processor_ptr()->focus_attention(arguments.back().get_numeric_value());
+            human_ptr->get_Eye_processor_ptr()->focus_attention(args.back().get_numeric_value());
         else if (args.front() == Set_attn_c)
-            human_ptr->get_Eye_processor_ptr()->set_attention(arguments.back().get_numeric_value());
+            human_ptr->get_Eye_processor_ptr()->set_attention(args.back().get_numeric_value());
         else
-            throw Command_exception(human_ptr, string("Invalid rule Modulate attention: (") +
-                                                   concatenate_to_string(arguments) + ")");
+            throw Command_exception(
+                human_ptr,
+                string("Invalid rule Modulate_attention action, expected (Modulate_attention Focus|Set <number>): (") +
+                    concatenate_to_string(arguments) + ")");
         return;
     }
 
-    // Attend_to commands for spatial attention/saliency cues
+    // Place or clear cues in the saliency map
+    // (Attend_to Cue <object>), (Attend_to Region <region>), (Attend_to Previous), (Attend_to Null|Clear)
     else if (arguments.front() == "Attend_to") {
         Symbol_list_t args = arguments; // so we can modify the argument list
         args.pop_front();
 
-        if (args.front() == Cue_c) {
-            args.pop_front();
-            const Symbol cue_name = args.front();
-            human_ptr->get_Eye_processor_ptr()->insert_spatial_cue(cue_name);
+        if (args.size() == 2 && args.front() == Cue_c) {
+            human_ptr->get_Eye_processor_ptr()->insert_spatial_cue(args.back());
         }
-        else if (args.front() == Region_c) {
-            args.pop_front();
-            const Symbol region = args.front();
-            human_ptr->get_Eye_processor_ptr()->insert_regional_cue(region);
+        else if (args.size() == 2 && args.front() == Region_c) {
+            human_ptr->get_Eye_processor_ptr()->insert_regional_cue(args.back());
         }
-        else if (args.front() == Clear_c) {
+        else if (args.size() == 1 && (args.front() == Clear_c || args.front() == Clear_alt_c)) {
             human_ptr->get_Eye_processor_ptr()->clear_spatial_map();
         }
-        else if (args.front() == Previous_c) {
+        else if (args.size() == 1 && args.front() == Previous_c) {
             human_ptr->get_Eye_processor_ptr()->cue_previous();
         }
         else
-            throw Command_exception(human_ptr,
-                                    string("Invalid rule Attend_to: (") + concatenate_to_string(arguments) + ")");
+            throw Command_exception(
+                human_ptr,
+                string("Invalid rule Attend_to action, expected (Attend_to Cue <object>), (Attend_to Region <region>), "
+                       "(Attend_to Previous), or (Attend_to Null): (") +
+                    concatenate_to_string(arguments) + ")");
         return;
     }
 

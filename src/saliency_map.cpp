@@ -1,174 +1,246 @@
 //
-//  Saliency_map.cpp
+//  saliency_map.cpp
 //  Attention Classes
 //
-//  Created by Michael Walton on 1/15/14.
-//  Copyright (c) 2014 Michael Walton. All rights reserved.
+//  Originally created by Michael Walton on 1/15/14.
+//  Combined-attention version: analytic evaluation; see saliency_map.h
+//  and EPIC_Visual_Attention.md.
 //
-
-#define _USE_MATH_DEFINES
 
 #include "saliency_map.h"
 #include "epic_standard_symbols.h"
-#include <math.h>
+#include "assert_throw.h"
 
-/*
- An empty map is defined by its angular resolution in degrees visual angle
- The calculation for determining the size n of the map is given by:
- n = 2 * periphery_VA / angular_resolution
- */
+#include <cmath>
+#include <sstream>
 
-Saliency_map::Saliency_map()
-    : Matrix()
+using std::exp;
+using std::sqrt;
+using std::string;
+using std::ostringstream;
+
+const Symbol Flat_c("Flat");
+const Symbol GaussianComplex_c("Complex_Gaussian");
+const Symbol Gaussian_c("Gaussian");
+
+const double Saliency_map::fovea_radius_c = 1.0;
+const double Saliency_map::parafovea_radius_c = 7.5;
+const double Saliency_map::periphery_radius_c = 60.0;
+
+// full width at half maximum = 2 sqrt(2 ln 2) sigma
+static const double FWHM_per_sigma_c = 2.354820045;
+
+// Gaussian with peak 1
+static double gaussian(double dx, double dy, double sigma)
 {
-    angular_resolution = 1;
-    periphery_radius = 60;
-    size_t n = 2 * periphery_radius / angular_resolution;
-    resize(n, n, 0);
-    center_x = (int)n / 2;
-    center_y = (int)n / 1;
+    return exp(-0.5 * (dx * dx + dy * dy) / (sigma * sigma));
 }
 
-Saliency_map::Saliency_map(double _angular_resolution, double _periphery_radius)
-    : Matrix()
+// sigma of a Gaussian whose value falls to half its peak at the given radius
+static double sigma_for_half_max_radius(double radius)
 {
-    angular_resolution = _angular_resolution;
-    periphery_radius = _periphery_radius;
-    size_t n = 2 * periphery_radius / angular_resolution;
-    resize(n, n, 0);
+    return (2. * radius) / FWHM_per_sigma_c;
 }
 
-// Mutators
-/*
- Generates a retinal map
- FWHM (full width at half maximum) is used to compute appropriate sigmas
- for the width of the fovea, parafovea and periphery
-
- three gaussians are generated and combined to create the retinal map
- */
-void Saliency_map::retinal_distribution(double fv, double paraF, double perif)
+Saliency_map::Saliency_map(Retinal_distribution_e retinal_distribution_, double periphery_radius_,
+                            double grid_resolution_, double cue_weight_)
+    : retinal_distribution(retinal_distribution_)
+    , periphery_radius(periphery_radius_)
+    , grid_resolution(grid_resolution_)
+    , cue_weight(cue_weight_)
+    , max_cache_valid(false)
+    , max_cache_value(1.)
 {
-    double periphery_sigma = FWHM_constant * perif;
-    double fovea_sigma = FWHM_constant * fv;
-    double parafovea_sigma = FWHM_constant * paraF;
-
-    int x_mean = (int)get_width() / 2;
-    int y_mean = (int)get_height() / 2;
-
-    double fv_A = M_PI * fv * fv;
-    double paraF_A = M_PI * paraF * paraF;
-    double perif_A = M_PI * perif * perif;
-
-    Saliency_map fovea = Saliency_map(angular_resolution, periphery_radius);
-    Saliency_map parafovea = Saliency_map(angular_resolution, periphery_radius);
-    Saliency_map periphery = Saliency_map(angular_resolution, periphery_radius);
-
-    fovea.to_gaussian(x_mean, y_mean, fovea_sigma);
-    parafovea.to_gaussian(x_mean, y_mean, parafovea_sigma);
-    periphery.to_gaussian(x_mean, y_mean, periphery_sigma);
-
-    linear_combination(fovea, fv_A);
-    linear_combination(parafovea, paraF_A);
-    linear_combination(periphery, perif_A);
-
-    // normalize();
+    Assert(periphery_radius > 0.);
+    Assert(grid_resolution > 0.);
+    Assert(cue_weight >= 0.);
+    // regional cues: the same shape as the original grid implementation,
+    // a logistic that rises over the half-width of the map: slope = 4 / periphery_radius per DVA
+    sigmoid_slope = 4. / periphery_radius;
 }
 
-void Saliency_map::parafoveal_distribution(double fv, double paraF)
+/* Cues */
+
+void Saliency_map::add_object_cue(GU::Point location, GU::Size size)
 {
-    double parafovea_sigma = FWHM_constant * paraF;
-
-    int x_mean = (int)get_width() / 2;
-    int y_mean = (int)get_height() / 2;
-
-    double paraF_A = M_PI * paraF * paraF;
-
-    Saliency_map parafovea = Saliency_map(angular_resolution, periphery_radius);
-
-    parafovea.to_gaussian(x_mean, y_mean, parafovea_sigma);
-
-    linear_combination(parafovea, paraF_A);
-
-    // normalize(get_max());
+    double fwhm = (size.h + size.v) / 2.;
+    // a point-sized object still gets a cue at least one grid step wide
+    if (fwhm < grid_resolution)
+        fwhm = grid_resolution;
+    Cue cue;
+    cue.type = Object_cue;
+    cue.location = location;
+    cue.sigma = fwhm / FWHM_per_sigma_c;
+    cues.push_back(cue);
+    max_cache_valid = false;
 }
 
-void Saliency_map::flat_distribution()
+bool Saliency_map::add_regional_cue(const Symbol& region)
 {
-    size_t n = 2 * periphery_radius / angular_resolution;
-    resize(n, n, 1);
-    double sum = (double)n * n;
-    normalize(sum);
+    if (!(region == Right_c || region == Left_c || region == Above_c || region == Below_c ||
+          region == Upper_Right_c || region == Upper_Left_c || region == Lower_Left_c ||
+          region == Lower_Right_c || region == Visual_Space_c))
+        return false;
+    Cue cue;
+    cue.type = Regional_cue;
+    cue.sigma = 0.;
+    cue.region = region;
+    cues.push_back(cue);
+    max_cache_valid = false;
+    return true;
 }
 
-void Saliency_map::insert_gaussian_cue(GU::Point loc, GU::Size size)
+void Saliency_map::clear_cues()
 {
-    double h_sz = size.h;
-    double v_sz = size.v;
-
-    double x_mean = loc.x;
-    double y_mean = loc.y;
-
-    double cue_sigma = FWHM_constant * h_sz * v_sz;
-    // double cue_area = M_PI * (size / 2) * (size / 2);
-
-    Saliency_map cue_map = Saliency_map(angular_resolution, periphery_radius);
-    cue_map.to_gaussian(x_mean, y_mean, cue_sigma);
-
-    linear_combination(cue_map, 1); // FIXME: Scalar coeff???
+    cues.clear();
+    max_cache_valid = false;
 }
 
-void Saliency_map::insert_regional_cue(double upper_asymptote, const Symbol& region)
-{
-    Saliency_map cue_map = Saliency_map(angular_resolution, periphery_radius);
+/* Evaluation */
 
-    if (region == Right_c) {
-        cue_map.to_positive_sigmoid(upper_asymptote);
+double Saliency_map::sigmoid(double d) const
+{
+    return 1. / (1. + exp(-sigmoid_slope * d));
+}
+
+// dx, dy are the offset from the point of gaze, +y up; value in [0, 1]
+double Saliency_map::regional_value(const Symbol& region, double dx, double dy) const
+{
+    if (region == Right_c)
+        return sigmoid(dx);
+    if (region == Left_c)
+        return sigmoid(-dx);
+    if (region == Above_c)
+        return sigmoid(dy);
+    if (region == Below_c)
+        return sigmoid(-dy);
+    if (region == Upper_Right_c)
+        return (sigmoid(dx) + sigmoid(dy)) / 2.;
+    if (region == Upper_Left_c)
+        return (sigmoid(-dx) + sigmoid(dy)) / 2.;
+    if (region == Lower_Left_c)
+        return (sigmoid(-dx) + sigmoid(-dy)) / 2.;
+    if (region == Lower_Right_c)
+        return (sigmoid(dx) + sigmoid(-dy)) / 2.;
+    // Visual_Space: the whole field equally
+    return 1.;
+}
+
+double Saliency_map::retinal_value(GU::Point location, GU::Point eye_location) const
+{
+    double dx = location.x - eye_location.x;
+    double dy = location.y - eye_location.y;
+    switch (retinal_distribution) {
+        case Gaussian_retina:
+            return gaussian(dx, dy, sigma_for_half_max_radius(parafovea_radius_c));
+        case Complex_gaussian_retina:
+            // equal-peak mixture of foveal, parafoveal, and peripheral Gaussians, scaled to peak 1
+            return (gaussian(dx, dy, sigma_for_half_max_radius(fovea_radius_c)) +
+                    gaussian(dx, dy, sigma_for_half_max_radius(parafovea_radius_c)) +
+                    gaussian(dx, dy, sigma_for_half_max_radius(periphery_radius_c))) /
+                   3.;
+        case Flat_retina:
+        default:
+            return 1.;
     }
-    else if (region == Left_c) {
-        cue_map.to_negative_sigmoid(upper_asymptote);
-    }
-    else if (region == Upper_Right_c) {
-        cue_map.to_multivariable_sigmoid(upper_asymptote, 1);
-    }
-    else if (region == Upper_Left_c) {
-        cue_map.to_multivariable_sigmoid(upper_asymptote, 2);
-    }
-    else if (region == Lower_Left_c) {
-        cue_map.to_multivariable_sigmoid(upper_asymptote, 3);
-    }
-    else if (region == Lower_Right_c) {
-        cue_map.to_multivariable_sigmoid(upper_asymptote, 4);
-    }
-    else if (region == Above_c) {
-        cue_map.to_yaxis_sigmoid(upper_asymptote, true);
-    }
-    else if (region == Below_c) {
-        cue_map.to_yaxis_sigmoid(upper_asymptote, false);
-    }
-    else {
-        cue_map.flat_distribution();
-    }
-
-    linear_combination(cue_map, 1); // FIXME: Scalar coeff???
 }
 
-// Accessors
-double Saliency_map::get_angular_resolution()
+double Saliency_map::cue_value(GU::Point location, GU::Point eye_location) const
 {
-    return angular_resolution;
+    double sum = 0.;
+    for (std::list<Cue>::const_iterator it = cues.begin(); it != cues.end(); ++it) {
+        if (it->type == Object_cue)
+            sum += gaussian(location.x - it->location.x, location.y - it->location.y, it->sigma);
+        else
+            sum += regional_value(it->region, location.x - eye_location.x, location.y - eye_location.y);
+    }
+    return sum;
 }
 
-int Saliency_map::get_center_x()
+double Saliency_map::value(GU::Point location, GU::Point eye_location) const
 {
-    return center_x;
+    return retinal_value(location, eye_location) + cue_weight * cue_value(location, eye_location);
 }
 
-int Saliency_map::get_center_y()
+double Saliency_map::max_value(GU::Point eye_location) const
 {
-    return center_y;
+    if (max_cache_valid && max_cache_eye_location == eye_location)
+        return max_cache_value;
+
+    // sample the square field around the eye on the grid, plus the exact peaks of the components
+    double max = value(eye_location, eye_location);
+    for (std::list<Cue>::const_iterator it = cues.begin(); it != cues.end(); ++it) {
+        if (it->type != Object_cue)
+            continue;
+        if (std::fabs(it->location.x - eye_location.x) > periphery_radius ||
+            std::fabs(it->location.y - eye_location.y) > periphery_radius)
+            continue;
+        double v = value(it->location, eye_location);
+        if (v > max)
+            max = v;
+    }
+    int n = int(periphery_radius / grid_resolution);
+    for (int i = -n; i <= n; i++) {
+        for (int j = -n; j <= n; j++) {
+            GU::Point p(eye_location.x + i * grid_resolution, eye_location.y + j * grid_resolution);
+            double v = value(p, eye_location);
+            if (v > max)
+                max = v;
+        }
+    }
+    max_cache_valid = true;
+    max_cache_eye_location = eye_location;
+    max_cache_value = max;
+    return max;
 }
 
-int Saliency_map::get_periphery_radius()
+double Saliency_map::relative_salience(GU::Point location, GU::Point eye_location) const
 {
-    return periphery_radius;
+    double max = max_value(eye_location);
+    if (max <= 0.)
+        return 1.;
+    double s = value(location, eye_location) / max;
+    if (s > 1.)  // a location between grid samples can slightly exceed the sampled maximum
+        s = 1.;
+    if (s < 0.)
+        s = 0.;
+    return s;
+}
+
+string Saliency_map::get_description() const
+{
+    ostringstream oss;
+    oss << "retinal distribution: ";
+    switch (retinal_distribution) {
+        case Gaussian_retina:
+            oss << Gaussian_c;
+            break;
+        case Complex_gaussian_retina:
+            oss << GaussianComplex_c;
+            break;
+        default:
+            oss << Flat_c;
+            break;
+    }
+    oss << "; map radius: " << periphery_radius << " DVA; grid resolution: " << grid_resolution
+        << " DVA; cue weight: " << cue_weight;
+    return oss.str();
+}
+
+string Saliency_map::describe_cues() const
+{
+    ostringstream oss;
+    if (cues.empty())
+        return "no cues";
+    bool first = true;
+    for (std::list<Cue>::const_iterator it = cues.begin(); it != cues.end(); ++it) {
+        if (!first)
+            oss << ", ";
+        first = false;
+        if (it->type == Object_cue)
+            oss << "object cue at " << it->location << " FWHM " << it->sigma * FWHM_per_sigma_c;
+        else
+            oss << "region " << it->region;
+    }
+    return oss.str();
 }

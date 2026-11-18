@@ -261,4 +261,5 @@ const Symbol Lower_Left_c("Lower_Left");
 const Symbol Lower_Right_c("Lower_Right");
 const Symbol Visual_Space_c("Visual_Space");
 const Symbol Clear_c("Null");
+const Symbol Clear_alt_c("Clear");
 const Symbol Previous_c("Previous");

@@ -1,80 +1,78 @@
 //
-//  Visual_attention_processor.h
+//  visual_attention_processor.h
 //  Attention Classes
 //
-//  Created by Michael Walton on 1/22/14.
-//  Copyright (c) 2014 Michael Walton. All rights reserved.
+//  Originally created by Michael Walton on 1/22/14.
+//  Combined-attention version; see EPIC_Visual_Attention.md.
+//
+//  The Visual_attention_processor owns the saliency map and converts the relative
+//  salience of an object's location into a lengthening of a property's transduction delay:
+//
+//      delay = base_delay * (1 + delay_deviation * (1 - S(object) / max S))
+//
+//  so the most salient place in the visual field gets the base delay, and the least
+//  salient places get up to (1 + delay_deviation) times the base delay.
+//  Objects farther than the map radius from the point of gaze get the maximum delay.
+//
+//  The Eye_processor only creates one of these when a Saliency_map parameter is given;
+//  without it, no saliency modulation happens at all.
 //
 
 #ifndef VISUAL_ATTENTION_PROCESSOR_H
 #define VISUAL_ATTENTION_PROCESSOR_H
 
 #include "saliency_map.h"
-
-#include "visual_physical_store.h"
-#include "visual_constants.h"
 #include "symbol.h"
-
 #include "geometry.h"
+
+#include <memory>
+#include <string>
+
 namespace GU = Geometry_Utilities;
 
-// class Visual_attention_processor : public Reference_Counted_Object {
-class Visual_attention_processor
-{
+class Human_processor;
+class Visual_store_object;
+struct Parameter_specification;
+
+class Visual_attention_processor {
+public:
+    Visual_attention_processor(Saliency_map::Retinal_distribution_e retinal_distribution,
+                               double grid_resolution, double periphery_radius, double cue_weight,
+                               double delay_deviation, bool debug);
+
+    // parse a Saliency_map parameter specification:
+    // <retinal_distribution> <grid_resolution> <map_radius> <cue_weight> <delay_deviation> [Debug]
+    static std::shared_ptr<Visual_attention_processor> create(const Parameter_specification& param_spec);
+
+    // reset the per-run state (all cues and the remembered cue location)
+    void initialize();
+
+    // rule commands
+    // cue the location of a visual object, named by its psychological name; returns false if
+    // the object is not in the visual perceptual store
+    bool spatial_cue(Human_processor* human_ptr, const Symbol& psychological_name);
+    // cue the last cued object location again; returns false if there was none
+    bool spatial_cue_previous();
+    // returns false if the region name is not recognized
+    bool regional_cue(const Symbol& region);
+    void clear_cues();
+
+    // the saliency-modulated delay for a property of an object
+    long delay(long base_delay, std::shared_ptr<Visual_store_object> obj_ptr, GU::Point eye_location) const;
+
+    const Saliency_map& get_saliency_map() const { return saliency_map; }
+    double get_delay_deviation() const { return delay_deviation; }
+    bool get_debug() const { return debug; }
+    std::string get_description() const;
+
 private:
-    Saliency_map saliency;
-    Saliency_map retinal;
-    Saliency_map endogenous_spatial;
-
-    double weight;
-    double delay_deviation_magnitude;
-
-    double angular_resolution;
-    double periphery_radius;
-    int central_coordinate;
-    int map_size;
-
-    GU::Point last_known_cue_coordinate;
-    GU::Size last_known_cue_size;
-
+    Saliency_map saliency_map;
+    double delay_deviation;
     bool debug;
 
-public:
-    // Constructors
-    Visual_attention_processor();
-    Visual_attention_processor(Symbol overt_dist, double _angular_resolution, double _periphery_radius, double _weight,
-                               double _delay_deviation_magnitude, int _debug);
-
-    //"pre-constructor" takes param specs and returns a new VAP
-    static Visual_attention_processor* create(const Visual_physical_store& physical_store,
-                                              const Parameter_specification& param_spec);
-
-    // Mutators
-    void generate_saliency_map(double retinal_scalar, double endogenous_spatial_scalar);
-    void spatial_cue(Human_processor* const human_ptr, const Symbol& objname);
-    void spatial_cue(Human_processor* const human_ptr);
-    void regional_cue(const Symbol& region);
-    void clear_endogenous_spatial();
-
-    // Accessors
-    Saliency_map* saliency_ptr();
-    Saliency_map* retinal_ptr();
-    Saliency_map* endogenous_spatial_ptr();
-    GU::Point get_retinotopic_coordinate(GU::Point eye_loc, GU::Point obj_loc);
-
-    long get_delay_range();
-    long delay(double min_delay, std::shared_ptr<Visual_store_object> physobj_ptr, GU::Point eye_loc,
-               double time_fluctuation);
-
-    virtual std::string get_description() const;
-    void to_csv();
+    bool have_last_cue;
+    GU::Point last_cue_location;
+    GU::Size last_cue_size;
 };
-
-// Symbols
-extern const Symbol Flat_c;
-extern const Symbol GaussianComplex_c;
-extern const Symbol Gaussian_c;
-
-static Saliency_map add(double scale_n, double scale_m, Saliency_map n, Saliency_map m);
 
 #endif

@@ -323,6 +323,13 @@ private:
                 flush_func = py::object();
                 write_func = py::object();
                 stream = py::object();
+            } else {
+                // Interpreter is gone - release ownership without decref to avoid crash
+                // during Python finalization when Py_None may already be deallocated
+                (void)close_func.release();
+                (void)flush_func.release();
+                (void)write_func.release();
+                (void)stream.release();
             }
         }
 
@@ -389,7 +396,8 @@ private:
 
         py::gil_scoped_acquire gil;
         for (auto& cached : py_streams) {
-            if (!cached.flush_func.is_none()) {
+            // Check both that flush_func is valid (not null) and not None
+            if (cached.flush_func && !cached.flush_func.is_none()) {
                 try {
                     cached.flush_func();
                 }
@@ -410,7 +418,8 @@ private:
 
         py::gil_scoped_acquire gil;
         for (auto& cached : py_streams) {
-            if (!cached.close_func.is_none()) {
+            // Check both that close_func is valid (not null) and not None
+            if (cached.close_func && !cached.close_func.is_none()) {
                 try {
                     cached.close_func();
                 }
